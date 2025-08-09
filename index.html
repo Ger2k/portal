@@ -816,15 +816,7 @@
       // Helpers
       // =====================
       const $ = (sel) => document.querySelector(sel);
-      const fmtDate = (d) => {
-        if (!d) return "-";
-        const date = new Date(d);
-        if (isNaN(date)) return "-";
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1).padStart(2, '0');
-        const year = String(date.getFullYear()).slice(-2);
-        return `${day}/${month}/${year}`;
-      };
+      const fmtDate = (d) => d ? new Date(d).toLocaleDateString("es-ES") : "-";
       function escapeHtml(s) {
         if (!s) return "";
         return String(s).replace(/[&<>"]|'/g, (m) => ({
@@ -1277,12 +1269,13 @@
             cover: $(SELECTORS.gCover).value.trim(),
             notes: $(SELECTORS.gNotes).value.trim(),
           };
+          // Solo buscar portada si el campo está vacío y hay título
           if (!payload.cover && payload.title) {
             $(SELECTORS.coverStatus).textContent = "Buscando portada...";
             try {
-              const img = await fetchCoverRAWG(payload.title);
-              if (img) {
-                payload.cover = img;
+              const imgs = await fetchCoverRAWG(payload.title);
+              if (imgs && imgs.length) {
+                payload.cover = imgs[0];
                 $(SELECTORS.coverStatus).textContent = "Portada encontrada y asignada";
               } else {
                 $(SELECTORS.coverStatus).textContent = "No se encontró portada automáticamente";
