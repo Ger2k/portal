@@ -240,6 +240,71 @@
         color: #fff;
         cursor: pointer;
       }
+      /* --- Responsive: juegos en móvil --- */
+      @media (max-width: 600px) {
+        .game {
+          flex-direction: column;
+          align-items: center;
+          gap: 14px;
+          padding: 16px 10px;
+        }
+        .game .score {
+          margin-top: 8px;
+          font-size: 16px;
+          padding: 4px 10px;
+        }
+        .game .cover {
+          width: 100%;
+          max-width: 240px;
+          aspect-ratio: 1 / 1;
+          height: auto;
+          margin: 0 auto 8px auto;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+        .game .cover img {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
+          display: block;
+        }
+        .game .info {
+          min-width: 0;
+          margin-top: 2rem;
+        }
+        .game h3 {
+          font-size: 18px;
+          white-space: normal;
+          text-overflow: unset;
+        }
+        .game .meta {
+          flex-direction: column;
+          align-items: center;
+          gap: 4px;
+          font-size: 14px;
+        }
+        .game .notes {
+          font-size: 14px;
+          max-width: 100%;
+          white-space: normal;
+          text-overflow: unset;
+        }
+        .game .actions {
+          margin-left: 0;
+          margin-top: 10px;
+          gap: 10px;
+          width: 100%;
+          justify-content: flex-end;
+        }
+        .game .actions button,
+        .actions button.small {
+          flex: 1 1 48%;
+          min-width: 0;
+          font-size: 15px;
+          padding: 10px 0;
+        }
+      }
 
       /* modal */
       .modal {
