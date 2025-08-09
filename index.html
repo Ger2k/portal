@@ -543,6 +543,36 @@
         color: #041124;
         font-weight: 600;
       }
+
+      /* Galería de miniaturas para portadas */
+      #coverThumbGallery img {
+        width: 48px;
+        height: 48px;
+        object-fit: cover;
+        border-radius: 8px;
+        border: 2px solid #222c3a;
+        cursor: pointer;
+        transition: box-shadow 0.15s, border 0.15s, transform 0.15s;
+        box-shadow: 0 1px 4px 0 rgba(2,6,23,0.10);
+      }
+      #coverThumbGallery img.selected {
+        border: 2.5px solid var(--accent);
+        box-shadow: 0 0 0 2px #60a5fa44;
+        transform: scale(1.08);
+      }
+      #coverThumbGallery img:hover {
+        border: 2.5px solid var(--accent);
+        box-shadow: 0 0 0 2px #60a5fa44;
+        transform: scale(1.08);
+      }
+      #coverPreviewWrap img {
+        width: 96px;
+        height: 96px;
+        object-fit: cover;
+        border-radius: 10px;
+        border: 2px solid #222c3a;
+        box-shadow: 0 2px 8px 0 rgba(2,6,23,0.13);
+      }
     </style>
   </head>
   <body>
@@ -679,20 +709,17 @@
             portada.</label
           >
           <input id="gCover" placeholder="https://...jpg" />
-          <div
-            style="
-              display: flex;
-              gap: 8px;
-              margin-top: 6px;
-              align-items: center;
-            "
-          >
-            <button type="button" id="btnFindCover" class="small">
-              Buscar portada ahora
-            </button>
-            <div id="coverStatus" style="font-size: 13px; color: var(--muted)">
-              Estado: sin buscar
+          <div style="margin-top:8px;">
+            <div style="display:flex;gap:8px;align-items:center;">
+              <button type="button" id="btnFindCover" class="small">
+                Buscar portada ahora
+              </button>
+              <div id="coverStatus" style="font-size: 13px; color: var(--muted)">
+                Estado: sin buscar
+              </div>
             </div>
+            <div id="coverThumbGallery" style="display:flex;gap:8px;margin:10px 0 8px 0;"></div>
+            <div id="coverPreviewWrap" style="display:flex;justify-content:center;"></div>
           </div>
           <label>Notas</label>
           <textarea id="gNotes" rows="3"></textarea>
@@ -1002,29 +1029,38 @@
       // =====================
       // RAWG cover search
       // =====================
+      // RAWG cover search: devuelve array de imágenes (máx 4)
       async function fetchCoverRAWG(title) {
         const q = title && title.trim();
-        if (!q) return null;
+        if (!q) return [];
         if (coverCache[q]) return coverCache[q];
         const base = "https://api.rawg.io/api/games";
-        const params = new URLSearchParams({ search: q, page_size: "1" });
+        const params = new URLSearchParams({ search: q, page_size: "3" });
         if (RAWG_API_KEY) params.set("key", RAWG_API_KEY);
         const url = `${base}?${params.toString()}`;
         try {
           const res = await fetch(url);
           if (!res.ok) throw new Error("RAWG no responde: " + res.status);
           const data = await res.json();
+          let imgs = [];
           if (data && data.results && data.results.length) {
-            const r = data.results[0];
-            const img = r.background_image || (r.short_screenshots && r.short_screenshots[0] && r.short_screenshots[0].image) || null;
-            coverCache[q] = img;
-            return img;
+            for (const r of data.results) {
+              if (r.background_image) imgs.push(r.background_image);
+              if (r.short_screenshots && Array.isArray(r.short_screenshots)) {
+                for (const s of r.short_screenshots) {
+                  if (s.image && !imgs.includes(s.image)) imgs.push(s.image);
+                }
+              }
+            }
           }
+          imgs = imgs.filter(Boolean).slice(0,4);
+          coverCache[q] = imgs;
+          return imgs;
         } catch (err) {
           console.warn("Error buscando portada RAWG:", err);
         }
-        coverCache[q] = null;
-        return null;
+        coverCache[q] = [];
+        return [];
       }
 
       // =====================
@@ -1132,7 +1168,7 @@
           $(SELECTORS.modal).setAttribute("aria-hidden", "true");
         });
 
-        // Buscar portada ahora
+        // Buscar portada ahora (muestra opciones y previsualización)
         $(SELECTORS.btnFindCover).addEventListener("click", async () => {
           const title = $(SELECTORS.gTitle).value.trim();
           if (!title) {
@@ -1140,11 +1176,38 @@
             return;
           }
           $(SELECTORS.coverStatus).textContent = "Buscando...";
+          const gallery = document.getElementById('coverThumbGallery');
+          const previewWrap = document.getElementById('coverPreviewWrap');
+          gallery.innerHTML = '';
+          previewWrap.innerHTML = '';
           try {
-            const img = await fetchCoverRAWG(title);
-            if (img) {
-              $(SELECTORS.gCover).value = img;
-              $(SELECTORS.coverStatus).textContent = "Portada encontrada";
+            const imgs = await fetchCoverRAWG(title);
+            if (imgs && imgs.length) {
+              imgs.forEach((imgUrl, idx) => {
+                const thumb = document.createElement('img');
+                thumb.src = imgUrl;
+                thumb.title = 'Elegir esta portada';
+                thumb.addEventListener('click', () => {
+                  $(SELECTORS.gCover).value = imgUrl;
+                  updateCoverPreview();
+                  gallery.querySelectorAll('img').forEach(img => img.classList.remove('selected'));
+                  thumb.classList.add('selected');
+                });
+                // Si es la actual, resaltar
+                if ($(SELECTORS.gCover).value === imgUrl || (idx === 0 && !$(SELECTORS.gCover).value)) {
+                  thumb.classList.add('selected');
+                }
+                gallery.appendChild(thumb);
+              });
+              // Si no hay portada seleccionada, poner la primera
+              if (!$(SELECTORS.gCover).value) {
+                $(SELECTORS.gCover).value = imgs[0];
+                updateCoverPreview();
+                gallery.querySelector('img').classList.add('selected');
+              } else {
+                updateCoverPreview();
+              }
+              $(SELECTORS.coverStatus).textContent = "Elige la portada correcta";
             } else {
               $(SELECTORS.coverStatus).textContent = "No encontrada (usa URL manualmente o guarda y luego edita)";
             }
@@ -1154,34 +1217,44 @@
           }
         });
 
-        // Auto-search de portada mientras escribes (debounced)
-        const tryAutoFindCover = debounce(async () => {
-          const title = $(SELECTORS.gTitle).value.trim();
-          if (!title) {
-            $(SELECTORS.coverStatus).textContent = "sin buscar";
-            return;
-          }
-          if ($(SELECTORS.gCover).value.trim()) {
-            $(SELECTORS.coverStatus).textContent = "URL manual presente";
-            return;
-          }
-          $(SELECTORS.coverStatus).textContent = "Buscando...";
-          try {
-            const img = await fetchCoverRAWG(title);
-            if (img) {
-              $(SELECTORS.gCover).value = img;
-              $(SELECTORS.coverStatus).textContent = "Portada encontrada (auto)";
-            } else {
-              $(SELECTORS.coverStatus).textContent = "No encontrada automáticamente";
+        // Previsualización de portada al cambiar input manualmente
+        $(SELECTORS.gCover).addEventListener('input', () => {
+          var val = $(SELECTORS.gCover).value.trim();
+          document.getElementById('coverThumbGallery').querySelectorAll('img').forEach(img => {
+            img.classList.remove('selected');
+            if (img.src === val) {
+              img.classList.add('selected');
             }
-          } catch (err) {
-            $(SELECTORS.coverStatus).textContent = "Error al buscar (auto)";
-            console.warn(err);
+          });
+          updateCoverPreview();
+        });
+        // Mostrar previsualización al abrir modal de edición/añadir
+        function updateCoverPreview() {
+          const url = $(SELECTORS.gCover).value.trim();
+          const previewWrap = document.getElementById('coverPreviewWrap');
+          previewWrap.innerHTML = '';
+          if (url) {
+            const img = document.createElement('img');
+            img.src = url;
+            img.alt = 'Previsualización de portada';
+            previewWrap.appendChild(img);
           }
-        }, 900);
-        $(SELECTORS.gTitle).addEventListener("input", () => {
-          if ($(SELECTORS.modal).classList.contains("show"))
-            tryAutoFindCover();
+        }
+        // Llamar al abrir modal
+        const origOpenEdit = window.openEdit;
+        window.openEdit = function(id) {
+          origOpenEdit(id);
+          setTimeout(() => {
+            document.getElementById('coverThumbGallery').innerHTML = '';
+            updateCoverPreview();
+          }, 50);
+        };
+        // Al abrir modal de añadir
+        $(SELECTORS.btnAdd).addEventListener('click', () => {
+          setTimeout(() => {
+            document.getElementById('coverThumbGallery').innerHTML = '';
+            updateCoverPreview();
+          }, 50);
         });
 
         // Guardar juego (submit form)
