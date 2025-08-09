@@ -664,10 +664,10 @@
     <!-- Firebase Realtime Database -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
     <script>
-      // --- CONFIG ---
-      // --- FIREBASE CONFIG ---
-      // Rellena con tus datos reales de Firebase Console
-      const firebaseConfig = {
+      // =====================
+      // Configuración y Constantes
+      // =====================
+      const FIREBASE_CONFIG = {
         apiKey: "TU_API_KEY",
         authDomain: "juegos-completados-a3005.firebaseapp.com",
         databaseURL: "https://juegos-completados-a3005-default-rtdb.europe-west1.firebasedatabase.app",
@@ -676,13 +676,65 @@
         messagingSenderId: "TU_MESSAGING_SENDER_ID",
         appId: "TU_APP_ID"
       };
-      firebase.initializeApp(firebaseConfig);
-      const db = firebase.database();
-      // RAWG API: opcional. Si tienes una API KEY de rawg.io, pégala aquí para mayor fiabilidad.
-      // Si lo dejas vacío intentaremos la petición sin clave (puede funcionar o no dependiendo de RAWG en ese momento).
-      const RAWG_API_KEY = "f9f8f4e16c9740248b1c67e71720e801"; // clave proporcionada por el usuario (se ha eliminado un posible ':' inicial)
+      const RAWG_API_KEY = "f9f8f4e16c9740248b1c67e71720e801";
+      const WEATHER_KEY = "homepage_weather_loc";
+      const SELECTORS = {
+        gamesList: "#gamesList",
+        modal: "#modal",
+        modalTitle: "#modalTitle",
+        gameForm: "#gameForm",
+        gTitle: "#gTitle",
+        gPlatform: "#gPlatform",
+        gDate: "#gDate",
+        gScore: "#gScore",
+        gScoreValue: "#gScoreValue",
+        gScoreBubble: "#gScoreBubble",
+        gHours: "#gHours",
+        gCover: "#gCover",
+        gNotes: "#gNotes",
+        coverStatus: "#coverStatus",
+        btnAdd: "#btnAdd",
+        btnCancel: "#btnCancel",
+        btnFindCover: "#btnFindCover",
+        btnExport: "#btnExport",
+        fileImport: "#fileImport",
+        btnGeo: "#btnGeo",
+        inpLat: "#inpLat",
+        inpLon: "#inpLon",
+        btnFetchWeather: "#btnFetchWeather",
+        wTemp: "#wTemp",
+        wDesc: "#wDesc",
+        wPlace: "#wPlace",
+        confirmModal: "#confirmModal",
+        btnCancelDelete: "#btnCancelDelete",
+        btnConfirmDelete: "#btnConfirmDelete",
+        confirmGameTitle: "#confirmGameTitle",
+        googleForm: "#googleForm",
+        googleQuery: "#googleQuery",
+        btnSearch: "#btnSearch"
+      };
 
-      // --- Utilidad: debounce para evitar muchas peticiones mientras el usuario escribe ---
+      // =====================
+      // Inicialización Firebase
+      // =====================
+      firebase.initializeApp(FIREBASE_CONFIG);
+      const db = firebase.database();
+
+      // =====================
+      // Helpers
+      // =====================
+      const $ = (sel) => document.querySelector(sel);
+      const fmtDate = (d) => d ? new Date(d).toLocaleDateString("es-ES") : "-";
+      function escapeHtml(s) {
+        if (!s) return "";
+        return String(s).replace(/[&<>"]|'/g, (m) => ({
+          "&": "&amp;",
+          "<": "&lt;",
+          ">": "&gt;",
+          '"': "&quot;",
+          "'": "&#39;"
+        })[m]);
+      }
       function debounce(fn, wait) {
         let t;
         return (...args) => {
@@ -691,37 +743,17 @@
         };
       }
 
-      // Nota: debajo, en DOMContentLoaded, se añade un listener "debounced" que intentará
-      // buscar automáticamente la portada cuando escribas el título y el campo Cover esté vacío.
-
-      // --- Constantes ---
-      // const STORAGE_KEY = "homepage_games_v1";
-      const WEATHER_KEY = "homepage_weather_loc";
+      // =====================
+      // Estado global
+      // =====================
       let games = [];
       let editingId = null;
-
-      // Cache en memoria para portadas buscadas en esta sesión
+      let pendingDeleteId = null;
       const coverCache = {};
 
-      // --- Helpers ---
-      const $ = (sel) => document.querySelector(sel);
-      const fmtDate = (d) =>
-        d ? new Date(d).toLocaleDateString("es-ES") : "-";
-
-      function escapeHtml(s) {
-        if (!s) return "";
-        return String(s).replace(/[&<>"']/g, function (m) {
-          return {
-            "&": "&amp;",
-            "<": "&lt;",
-            ">": "&gt;",
-            '"': "&quot;",
-            "'": "&#39;",
-          }[m];
-        });
-      }
-
-      // --- Weather mapping (Open-Meteo) ---
+      // =====================
+      // Weather mapping (Open-Meteo)
+      // =====================
       const weatherCodes = {
         0: "Cielo despejado",
         1: "Principalmente despejado",
@@ -743,11 +775,12 @@
         82: "Chubascos intensos",
         95: "Tormenta",
         96: "Tormenta con granizo ligero",
-        99: "Tormenta con granizo fuerte",
+        99: "Tormenta con granizo fuerte"
       };
 
-      // --- Storage ---
-      // --- Firebase: cargar y guardar juegos ---
+      // =====================
+      // CRUD y almacenamiento
+      // =====================
       function loadGames() {
         db.ref('games').once('value').then(snapshot => {
           games = snapshot.val() || [];
@@ -761,25 +794,23 @@
         db.ref('games').set(games);
       }
 
-      // --- Render ---
+      // =====================
+      // Renderizado de juegos
+      // =====================
       function renderGames() {
-        const container = $("#gamesList");
+        const container = $(SELECTORS.gamesList);
         container.innerHTML = "";
         if (!games.length) {
-          container.innerHTML =
-            '<div style="color:var(--muted)">No hay juegos todavía. Añade el primero.</div>';
+          container.innerHTML = '<div style="color:var(--muted)">No hay juegos todavía. Añade el primero.</div>';
           return;
         }
-        const sorted = [...games].sort((a, b) =>
-          (b.date || "").localeCompare(a.date || "")
-        );
+        const sorted = [...games].sort((a, b) => (b.date || "").localeCompare(a.date || ""));
         for (const g of sorted) {
           const div = document.createElement("div");
           div.className = "game";
           // Color score: de rojo (#ef4444) a verde (#22c55e)
           let scoreColor = '#9aa4b2';
           if (typeof g.score === 'number') {
-            // Interpolación lineal entre rojo y verde
             const r1=239,g1=68,b1=68, r2=34,g2=197,b2=94;
             const t = Math.max(0, Math.min(1, g.score/100));
             const r = Math.round(r1 + (r2 - r1) * t);
@@ -812,7 +843,9 @@
         }
       }
 
-      // --- CRUD ---
+      // =====================
+      // CRUD helpers
+      // =====================
       function addGame(payload) {
         const entry = Object.assign({
           id: String(Date.now()),
@@ -835,46 +868,42 @@
         saveGames();
         renderGames();
       }
-      let pendingDeleteId = null;
       function deleteGame(id) {
         const g = games.find(x => x.id === id);
         if (!g) return;
         pendingDeleteId = id;
-        document.getElementById('confirmGameTitle').textContent = g.title ? `"${g.title}"` : '';
-        document.getElementById('confirmModal').classList.add('show');
-        document.getElementById('confirmModal').setAttribute('aria-hidden', 'false');
+        $(SELECTORS.confirmGameTitle).textContent = g.title ? `"${g.title}"` : '';
+        $(SELECTORS.confirmModal).classList.add('show');
+        $(SELECTORS.confirmModal).setAttribute('aria-hidden', 'false');
       }
       function closeConfirmModal() {
-        document.getElementById('confirmModal').classList.remove('show');
-        document.getElementById('confirmModal').setAttribute('aria-hidden', 'true');
+        $(SELECTORS.confirmModal).classList.remove('show');
+        $(SELECTORS.confirmModal).setAttribute('aria-hidden', 'true');
         pendingDeleteId = null;
       }
-
       function openEdit(id) {
         const g = games.find((x) => x.id === id);
         if (!g) return;
         editingId = id;
-        $("#modalTitle").textContent = "Editar juego";
-        $("#gTitle").value = g.title;
-        $("#gPlatform").value = g.platform || "";
-        $("#gDate").value = g.date || "";
-        $("#gScore").value = g.score ?? 0;
+        $(SELECTORS.modalTitle).textContent = "Editar juego";
+        $(SELECTORS.gTitle).value = g.title;
+        $(SELECTORS.gPlatform).value = g.platform || "";
+        $(SELECTORS.gDate).value = g.date || "";
+        $(SELECTORS.gScore).value = g.score ?? 0;
         updateScoreUI(g.score ?? 0);
-        $("#gHours").value = g.hours ?? "";
-        $("#gCover").value = g.cover || "";
-        $("#gNotes").value = g.notes || "";
-        $("#coverStatus").textContent = g.cover
-          ? "Portada ya presente"
-          : "Sin portada";
-        $("#modal").classList.add("show");
-        $("#modal").setAttribute("aria-hidden", "false");
+        $(SELECTORS.gHours).value = g.hours ?? "";
+        $(SELECTORS.gCover).value = g.cover || "";
+        $(SELECTORS.gNotes).value = g.notes || "";
+        $(SELECTORS.coverStatus).textContent = g.cover ? "Portada ya presente" : "Sin portada";
+        $(SELECTORS.modal).classList.add("show");
+        $(SELECTORS.modal).setAttribute("aria-hidden", "false");
       }
 
-      // --- Export / Import ---
+      // =====================
+      // Export / Import
+      // =====================
       function exportJSON() {
-        const blob = new Blob([JSON.stringify(games, null, 2)], {
-          type: "application/json",
-        });
+        const blob = new Blob([JSON.stringify(games, null, 2)], { type: "application/json" });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
@@ -905,32 +934,25 @@
         r.readAsText(file);
       }
 
-      // --- RAWG cover search ---
+      // =====================
+      // RAWG cover search
+      // =====================
       async function fetchCoverRAWG(title) {
         const q = title && title.trim();
         if (!q) return null;
         if (coverCache[q]) return coverCache[q];
-
-        // Construimos URL. RAWG espera key=<API_KEY> si la tienes.
         const base = "https://api.rawg.io/api/games";
         const params = new URLSearchParams({ search: q, page_size: "1" });
         if (RAWG_API_KEY) params.set("key", RAWG_API_KEY);
         const url = `${base}?${params.toString()}`;
-
         try {
           const res = await fetch(url);
           if (!res.ok) throw new Error("RAWG no responde: " + res.status);
           const data = await res.json();
           if (data && data.results && data.results.length) {
             const r = data.results[0];
-            // RAWG suele devolver `background_image`. También intentamos screenshots si no hay.
-            const img =
-              r.background_image ||
-              (r.short_screenshots &&
-                r.short_screenshots[0] &&
-                r.short_screenshots[0].image) ||
-              null;
-            coverCache[q] = img; // puede ser null
+            const img = r.background_image || (r.short_screenshots && r.short_screenshots[0] && r.short_screenshots[0].image) || null;
+            coverCache[q] = img;
             return img;
           }
         } catch (err) {
@@ -940,267 +962,59 @@
         return null;
       }
 
-      // --- Weather ---
+      // =====================
+      // Weather
+      // =====================
       async function fetchWeather(lat, lon) {
         try {
-          $("#wTemp").textContent = "...";
-          $("#wDesc").textContent = "Cargando...";
-          const url = `https://api.open-meteo.com/v1/forecast?latitude=${encodeURIComponent(
-            lat
-          )}&longitude=${encodeURIComponent(
-            lon
-          )}&current_weather=true&temperature_unit=celsius&timezone=auto`;
+          $(SELECTORS.wTemp).textContent = "...";
+          $(SELECTORS.wDesc).textContent = "Cargando...";
+          const url = `https://api.open-meteo.com/v1/forecast?latitude=${encodeURIComponent(lat)}&longitude=${encodeURIComponent(lon)}&current_weather=true&temperature_unit=celsius&timezone=auto`;
           const res = await fetch(url);
           if (!res.ok) throw new Error("Respuesta del servidor no válida");
           const data = await res.json();
           if (data && data.current_weather) {
             const cw = data.current_weather;
-            $("#wTemp").textContent = Math.round(cw.temperature) + " °C";
-            $("#wDesc").textContent =
-              (weatherCodes[cw.weathercode] || "Condición #" + cw.weathercode) +
-              " · velocidad " +
-              cw.windspeed +
-              " m/s";
-            $("#wPlace").textContent = `Lat ${lat.toFixed(
-              4
-            )}, Lon ${lon.toFixed(4)}`;
+            $(SELECTORS.wTemp).textContent = Math.round(cw.temperature) + " °C";
+            $(SELECTORS.wDesc).textContent = (weatherCodes[cw.weathercode] || "Condición #" + cw.weathercode) + " · velocidad " + cw.windspeed + " m/s";
+            $(SELECTORS.wPlace).textContent = `Lat ${lat.toFixed(4)}, Lon ${lon.toFixed(4)}`;
             localStorage.setItem(WEATHER_KEY, JSON.stringify({ lat, lon }));
           } else {
-            $("#wDesc").textContent = "No hay datos actuales";
+            $(SELECTORS.wDesc).textContent = "No hay datos actuales";
           }
         } catch (err) {
-          $("#wDesc").textContent = "Error al obtener tiempo";
+          $(SELECTORS.wDesc).textContent = "Error al obtener tiempo";
           console.error(err);
         }
       }
-
       function tryLoadWeatherFromStorage() {
         const raw = localStorage.getItem(WEATHER_KEY);
         if (!raw) return false;
         try {
           const s = JSON.parse(raw);
           if (s.lat && s.lon) {
-            $("#inpLat").value = s.lat;
-            $("#inpLon").value = s.lon;
+            $(SELECTORS.inpLat).value = s.lat;
+            $(SELECTORS.inpLon).value = s.lon;
             fetchWeather(Number(s.lat), Number(s.lon));
             return true;
           }
         } catch (e) {}
         return false;
       }
-
-      // Mostrar por defecto el tiempo de Madrid Legazpi si no hay localización guardada
       function showDefaultWeatherIfNeeded() {
         const loaded = tryLoadWeatherFromStorage();
         if (!loaded) {
           const lat = 40.3989;
           const lon = -3.6944;
-          $("#inpLat").value = lat;
-          $("#inpLon").value = lon;
+          $(SELECTORS.inpLat).value = lat;
+          $(SELECTORS.inpLon).value = lon;
           fetchWeather(lat, lon);
         }
       }
 
-      // --- Events and init ---
-      document.addEventListener("DOMContentLoaded", () => {
-        loadGames();
-        renderGames();
-
-        // search
-        $("#btnSearch").addEventListener("click", doSearch);
-        $("#googleQuery").addEventListener("keydown", (e) => {
-          if (e.key === "Enter") doSearch();
-        });
-
-        // modal
-        $("#btnAdd").addEventListener("click", () => {
-          editingId = null;
-          $("#modalTitle").textContent = "Añadir juego";
-          $("#gameForm").reset();
-          // Establecer la fecha actual por defecto
-          const today = new Date().toISOString().slice(0, 10);
-          $("#gDate").value = today;
-          $("#coverStatus").textContent = "sin buscar";
-          // Resetear el valor del slider y el span
-          $("#gScore").value = 0;
-          $("#gScoreValue").textContent = 0;
-          updateScoreUI(0);
-          $("#modal").classList.add("show");
-          $("#modal").setAttribute("aria-hidden", "false");
-          $("#gTitle").focus();
-        });
-        $("#btnCancel").addEventListener("click", () => {
-          $("#modal").classList.remove("show");
-          $("#modal").setAttribute("aria-hidden", "true");
-        });
-
-        // Buscar portada ahora
-        $("#btnFindCover").addEventListener("click", async () => {
-          const title = $("#gTitle").value.trim();
-          if (!title) {
-            alert("Introduce primero el título");
-            return;
-          }
-          $("#coverStatus").textContent = "Buscando...";
-          try {
-            const img = await fetchCoverRAWG(title);
-            if (img) {
-              $("#gCover").value = img;
-              $("#coverStatus").textContent = "Portada encontrada";
-            } else {
-              $("#coverStatus").textContent =
-                "No encontrada (usa URL manualmente o guarda y luego edita)";
-            }
-          } catch (e) {
-            $("#coverStatus").textContent = "Error al buscar";
-            console.error(e);
-          }
-        });
-
-        // --- Auto-search de portada mientras escribes (debounced) ---
-        const tryAutoFindCover = debounce(async () => {
-          const title = $("#gTitle").value.trim();
-          if (!title) {
-            $("#coverStatus").textContent = "sin buscar";
-            return;
-          }
-          // si el usuario ya ha puesto una URL manual, respetarla
-          if ($("#gCover").value.trim()) {
-            $("#coverStatus").textContent = "URL manual presente";
-            return;
-          }
-          $("#coverStatus").textContent = "Buscando...";
-          try {
-            const img = await fetchCoverRAWG(title);
-            if (img) {
-              $("#gCover").value = img;
-              $("#coverStatus").textContent = "Portada encontrada (auto)";
-            } else {
-              $("#coverStatus").textContent = "No encontrada automáticamente";
-            }
-          } catch (err) {
-            $("#coverStatus").textContent = "Error al buscar (auto)";
-            console.warn(err);
-          }
-        }, 900);
-
-        // activamos el auto-search solo cuando el modal está abierto
-        $("#gTitle").addEventListener("input", () => {
-          if (document.getElementById("modal").classList.contains("show"))
-            tryAutoFindCover();
-        });
-
-        // form submit: si no hay cover, intentamos buscar automáticamente antes de guardar
-        $("#gameForm").addEventListener("submit", async (e) => {
-          e.preventDefault();
-          const payload = {
-            title: $("#gTitle").value.trim(),
-            platform: $("#gPlatform").value.trim(),
-            date: $("#gDate").value || "",
-            score: $("#gScore").value ? Number($("#gScore").value) : null,
-            hours: $("#gHours").value ? Number($("#gHours").value) : null,
-            cover: $("#gCover").value.trim(),
-            notes: $("#gNotes").value.trim(),
-          };
-
-          // Si no hay portada y hay título, intentar buscar antes de guardar
-          if (!payload.cover && payload.title) {
-            $("#coverStatus").textContent = "Buscando portada...";
-            try {
-              const img = await fetchCoverRAWG(payload.title);
-              if (img) {
-                payload.cover = img;
-                $("#coverStatus").textContent = "Portada encontrada y asignada";
-              } else {
-                $("#coverStatus").textContent =
-                  "No se encontró portada automáticamente";
-              }
-            } catch (err) {
-              console.warn(err);
-              $("#coverStatus").textContent = "Error buscando portada";
-            }
-          }
-
-          if (editingId) {
-            updateGame(editingId, payload);
-            editingId = null;
-          } else {
-            addGame(payload);
-          }
-          $("#modal").classList.remove("show");
-          $("#modal").setAttribute("aria-hidden", "true");
-        });
-
-        // export/import
-        $("#btnExport").addEventListener("click", exportJSON);
-        $("#fileImport").addEventListener("change", (e) => {
-          const f = e.target.files[0];
-          if (f) importJSON(f);
-          e.target.value = "";
-        });
-
-        // weather
-        $("#btnGeo").addEventListener("click", () => {
-          if (!navigator.geolocation) {
-            alert("Geolocalización no disponible en este navegador");
-            return;
-          }
-          navigator.geolocation.getCurrentPosition(
-            (pos) => {
-              const lat = pos.coords.latitude;
-              const lon = pos.coords.longitude;
-              $("#inpLat").value = lat;
-              $("#inpLon").value = lon;
-              fetchWeather(lat, lon);
-            },
-            (err) => {
-              alert("Error geolocalización: " + err.message);
-            }
-          );
-        });
-        $("#btnFetchWeather").addEventListener("click", () => {
-          const lat = parseFloat($("#inpLat").value);
-          const lon = parseFloat($("#inpLon").value);
-          if (Number.isFinite(lat) && Number.isFinite(lon)) {
-            fetchWeather(lat, lon);
-          } else {
-            alert("Introduce coordenadas válidas");
-          }
-        });
-
-        // try load saved loc
-        tryLoadWeatherFromStorage();
-        // mostrar por defecto el tiempo de Madrid Legazpi si no hay localización guardada
-        showDefaultWeatherIfNeeded();
-
-        // focus shortcuts
-        document.addEventListener("keydown", (e) => {
-          if (
-            e.key === "/" &&
-            document.activeElement.tagName !== "INPUT" &&
-            document.activeElement.tagName !== "TEXTAREA"
-          ) {
-            e.preventDefault();
-            $("#googleQuery").focus();
-          }
-        });
-
-        // Confirmación de borrado
-        document.getElementById('btnCancelDelete').addEventListener('click', closeConfirmModal);
-        document.getElementById('confirmModal').addEventListener('click', (e) => {
-          if (e.target === document.getElementById('confirmModal')) closeConfirmModal();
-        });
-        document.getElementById('btnConfirmDelete').addEventListener('click', () => {
-          if (pendingDeleteId) {
-            games = games.filter(x => x.id !== pendingDeleteId);
-            saveGames();
-            renderGames();
-            closeConfirmModal();
-          }
-        });
-      });
-
-      // --- Slider puntuación: sincronizar valor y burbuja ---
+      // =====================
+      // UI: Slider puntuación
+      // =====================
       function updateScoreUI(val) {
         const scoreSlider = document.getElementById("gScore");
         const scoreValue = document.getElementById("gScoreValue");
@@ -1209,63 +1023,243 @@
         if (!scoreSlider || !scoreValue || !scoreBubble || !scoreWrap) return;
         scoreValue.textContent = val;
         scoreBubble.textContent = val;
-        // Calcular la posición de la burbuja sobre el thumb
         const min = Number(scoreSlider.min);
         const max = Number(scoreSlider.max);
         const percent = (val - min) / (max - min);
         const sliderRect = scoreSlider.getBoundingClientRect();
-        const wrapRect = scoreWrap.getBoundingClientRect();
-        // El thumb se mueve dentro del slider, hay que compensar el padding y el ancho del thumb
-        const thumbWidth = 16; // igual que en el CSS
+        const thumbWidth = 16;
         const usableWidth = sliderRect.width - thumbWidth;
         let px = percent * usableWidth + thumbWidth / 2;
-        // Limitar para que no se salga
         px = Math.max(thumbWidth / 2, Math.min(sliderRect.width - thumbWidth / 2, px));
         scoreBubble.style.left = px + 'px';
       }
 
-      // Slider puntuación: sincronizar valor y burbuja
-      const scoreSlider = $("#gScore");
-      const scoreValue = $("#gScoreValue");
-      const scoreBubble = $("#gScoreBubble");
-      const scoreWrap = scoreSlider.closest('.score-slider_wrap');
-      scoreSlider.addEventListener("input", (e) => {
-        updateScoreUI(e.target.value);
-      });
-      scoreSlider.addEventListener("mousedown", () => {
-        scoreWrap.classList.add('active');
-        updateScoreUI(scoreSlider.value);
-      });
-      scoreSlider.addEventListener("touchstart", () => {
-        scoreWrap.classList.add('active');
-        updateScoreUI(scoreSlider.value);
-      });
-      ["mouseup","mouseleave","touchend","blur"].forEach(ev => {
-        scoreSlider.addEventListener(ev, () => {
-          scoreWrap.classList.remove('active');
+      // =====================
+      // Inicialización y eventos
+      // =====================
+      document.addEventListener("DOMContentLoaded", () => {
+        loadGames();
+        renderGames();
+
+        // Buscador Google
+        $(SELECTORS.btnSearch).addEventListener("click", doSearch);
+        $(SELECTORS.googleQuery).addEventListener("keydown", (e) => {
+          if (e.key === "Enter") doSearch();
+        });
+
+        // Modal añadir/editar juego
+        $(SELECTORS.btnAdd).addEventListener("click", () => {
+          editingId = null;
+          $(SELECTORS.modalTitle).textContent = "Añadir juego";
+          $(SELECTORS.gameForm).reset();
+          const today = new Date().toISOString().slice(0, 10);
+          $(SELECTORS.gDate).value = today;
+          $(SELECTORS.coverStatus).textContent = "sin buscar";
+          $(SELECTORS.gScore).value = 0;
+          $(SELECTORS.gScoreValue).textContent = 0;
+          updateScoreUI(0);
+          $(SELECTORS.modal).classList.add("show");
+          $(SELECTORS.modal).setAttribute("aria-hidden", "false");
+          $(SELECTORS.gTitle).focus();
+        });
+        $(SELECTORS.btnCancel).addEventListener("click", () => {
+          $(SELECTORS.modal).classList.remove("show");
+          $(SELECTORS.modal).setAttribute("aria-hidden", "true");
+        });
+
+        // Buscar portada ahora
+        $(SELECTORS.btnFindCover).addEventListener("click", async () => {
+          const title = $(SELECTORS.gTitle).value.trim();
+          if (!title) {
+            alert("Introduce primero el título");
+            return;
+          }
+          $(SELECTORS.coverStatus).textContent = "Buscando...";
+          try {
+            const img = await fetchCoverRAWG(title);
+            if (img) {
+              $(SELECTORS.gCover).value = img;
+              $(SELECTORS.coverStatus).textContent = "Portada encontrada";
+            } else {
+              $(SELECTORS.coverStatus).textContent = "No encontrada (usa URL manualmente o guarda y luego edita)";
+            }
+          } catch (e) {
+            $(SELECTORS.coverStatus).textContent = "Error al buscar";
+            console.error(e);
+          }
+        });
+
+        // Auto-search de portada mientras escribes (debounced)
+        const tryAutoFindCover = debounce(async () => {
+          const title = $(SELECTORS.gTitle).value.trim();
+          if (!title) {
+            $(SELECTORS.coverStatus).textContent = "sin buscar";
+            return;
+          }
+          if ($(SELECTORS.gCover).value.trim()) {
+            $(SELECTORS.coverStatus).textContent = "URL manual presente";
+            return;
+          }
+          $(SELECTORS.coverStatus).textContent = "Buscando...";
+          try {
+            const img = await fetchCoverRAWG(title);
+            if (img) {
+              $(SELECTORS.gCover).value = img;
+              $(SELECTORS.coverStatus).textContent = "Portada encontrada (auto)";
+            } else {
+              $(SELECTORS.coverStatus).textContent = "No encontrada automáticamente";
+            }
+          } catch (err) {
+            $(SELECTORS.coverStatus).textContent = "Error al buscar (auto)";
+            console.warn(err);
+          }
+        }, 900);
+        $(SELECTORS.gTitle).addEventListener("input", () => {
+          if ($(SELECTORS.modal).classList.contains("show"))
+            tryAutoFindCover();
+        });
+
+        // Guardar juego (submit form)
+        $(SELECTORS.gameForm).addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const payload = {
+            title: $(SELECTORS.gTitle).value.trim(),
+            platform: $(SELECTORS.gPlatform).value.trim(),
+            date: $(SELECTORS.gDate).value || "",
+            score: $(SELECTORS.gScore).value ? Number($(SELECTORS.gScore).value) : null,
+            hours: $(SELECTORS.gHours).value ? Number($(SELECTORS.gHours).value) : null,
+            cover: $(SELECTORS.gCover).value.trim(),
+            notes: $(SELECTORS.gNotes).value.trim(),
+          };
+          if (!payload.cover && payload.title) {
+            $(SELECTORS.coverStatus).textContent = "Buscando portada...";
+            try {
+              const img = await fetchCoverRAWG(payload.title);
+              if (img) {
+                payload.cover = img;
+                $(SELECTORS.coverStatus).textContent = "Portada encontrada y asignada";
+              } else {
+                $(SELECTORS.coverStatus).textContent = "No se encontró portada automáticamente";
+              }
+            } catch (err) {
+              console.warn(err);
+              $(SELECTORS.coverStatus).textContent = "Error buscando portada";
+            }
+          }
+          if (editingId) {
+            updateGame(editingId, payload);
+            editingId = null;
+          } else {
+            addGame(payload);
+          }
+          $(SELECTORS.modal).classList.remove("show");
+          $(SELECTORS.modal).setAttribute("aria-hidden", "true");
+        });
+
+        // Exportar/Importar
+        $(SELECTORS.btnExport).addEventListener("click", exportJSON);
+        $(SELECTORS.fileImport).addEventListener("change", (e) => {
+          const f = e.target.files[0];
+          if (f) importJSON(f);
+          e.target.value = "";
+        });
+
+        // Weather
+        $(SELECTORS.btnGeo).addEventListener("click", () => {
+          if (!navigator.geolocation) {
+            alert("Geolocalización no disponible en este navegador");
+            return;
+          }
+          navigator.geolocation.getCurrentPosition(
+            (pos) => {
+              const lat = pos.coords.latitude;
+              const lon = pos.coords.longitude;
+              $(SELECTORS.inpLat).value = lat;
+              $(SELECTORS.inpLon).value = lon;
+              fetchWeather(lat, lon);
+            },
+            (err) => {
+              alert("Error geolocalización: " + err.message);
+            }
+          );
+        });
+        $(SELECTORS.btnFetchWeather).addEventListener("click", () => {
+          const lat = parseFloat($(SELECTORS.inpLat).value);
+          const lon = parseFloat($(SELECTORS.inpLon).value);
+          if (Number.isFinite(lat) && Number.isFinite(lon)) {
+            fetchWeather(lat, lon);
+          } else {
+            alert("Introduce coordenadas válidas");
+          }
+        });
+        tryLoadWeatherFromStorage();
+        showDefaultWeatherIfNeeded();
+
+        // Atajo de foco buscador
+        document.addEventListener("keydown", (e) => {
+          if (
+            e.key === "/" &&
+            document.activeElement.tagName !== "INPUT" &&
+            document.activeElement.tagName !== "TEXTAREA"
+          ) {
+            e.preventDefault();
+            $(SELECTORS.googleQuery).focus();
+          }
+        });
+
+        // Confirmación de borrado
+        $(SELECTORS.btnCancelDelete).addEventListener('click', closeConfirmModal);
+        $(SELECTORS.confirmModal).addEventListener('click', (e) => {
+          if (e.target === $(SELECTORS.confirmModal)) closeConfirmModal();
+        });
+        $(SELECTORS.btnConfirmDelete).addEventListener('click', () => {
+          if (pendingDeleteId) {
+            games = games.filter(x => x.id !== pendingDeleteId);
+            saveGames();
+            renderGames();
+            closeConfirmModal();
+          }
+        });
+
+        // Slider puntuación: sincronizar valor y burbuja
+        const scoreSlider = $(SELECTORS.gScore);
+        const scoreWrap = scoreSlider.closest('.score-slider-wrap');
+        scoreSlider.addEventListener("input", (e) => {
+          updateScoreUI(e.target.value);
+        });
+        scoreSlider.addEventListener("mousedown", () => {
+          scoreWrap.classList.add('active');
           updateScoreUI(scoreSlider.value);
         });
+        scoreSlider.addEventListener("touchstart", () => {
+          scoreWrap.classList.add('active');
+          updateScoreUI(scoreSlider.value);
+        });
+        ["mouseup","mouseleave","touchend","blur"].forEach(ev => {
+          scoreSlider.addEventListener(ev, () => {
+            scoreWrap.classList.remove('active');
+            updateScoreUI(scoreSlider.value);
+          });
+        });
+        const modal = $(SELECTORS.modal);
+        const observer = new MutationObserver(() => {
+          if (modal.classList.contains('show')) {
+            setTimeout(() => updateScoreUI(scoreSlider.value), 10);
+          }
+        });
+        observer.observe(modal, { attributes: true, attributeFilter: ['class'] });
+        window.addEventListener('resize', () => updateScoreUI(scoreSlider.value));
+        updateScoreUI(scoreSlider.value);
       });
-      // Recalcular posición de la burbuja al abrir la modal o al redimensionar
-      const modal = document.getElementById('modal');
-      const observer = new MutationObserver(() => {
-        if (modal.classList.contains('show')) {
-          setTimeout(() => updateScoreUI(scoreSlider.value), 10);
-        }
-      });
-      observer.observe(modal, { attributes: true, attributeFilter: ['class'] });
-      window.addEventListener('resize', () => updateScoreUI(scoreSlider.value));
-      // Inicializar posición y valor
-      updateScoreUI(scoreSlider.value);
 
       function doSearch() {
-        const q = $("#googleQuery").value.trim();
+        const q = $(SELECTORS.googleQuery).value.trim();
         if (!q) return;
         const url = "https://www.google.com/search?q=" + encodeURIComponent(q);
         window.open(url, "_blank");
       }
 
-      // Exponer funciones para botones que usan onclick="..."
+      // Exponer funciones globales para botones inline
       window.openEdit = openEdit;
       window.deleteGame = deleteGame;
     </script>
