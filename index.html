@@ -5,97 +5,118 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Inicio — Página personal</title>
     <style>
-    /* Sidebar de links favoritos */
-    .sidebar-links {
-      position: fixed;
-      top: 50%;
-      left: 18px;
-      transform: translateY(-50%);
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-      z-index: 1200;
-    }
-    .sidebar-link-btn {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      background: var(--card);
-      border: 2px solid var(--accent);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--accent);
-      font-size: 24px;
-      box-shadow: 0 2px 8px 0 rgba(2,6,23,0.13);
-      cursor: pointer;
-      transition: background 0.18s, border 0.18s, transform 0.15s;
-      outline: none;
-      position: relative;
-    }
-    .sidebar-link-btn:hover {
-      background: var(--accent);
-      color: #041124;
-      border-color: #fff;
-      transform: scale(1.08);
-    }
-    .sidebar-link-btn img {
-      width: 36px;
-      height: 36px;
-      border-radius: 50%;
-      object-fit: cover;
-      display: block;
-    }
-    .sidebar-link-btn .fav-remove {
-      display: none;
-      position: absolute;
-      top: -8px;
-      right: -8px;
-      width: 22px;
-      height: 22px;
-      border-radius: 50%;
-      background: #181e2a;
-      border: 2px solid #ef4444;
-      color: #ef4444;
-      font-size: 15px;
-      font-weight: bold;
-      align-items: center;
-      justify-content: center;
-      cursor: pointer;
-      z-index: 2;
-      box-shadow: 0 2px 8px 0 rgba(2,6,23,0.13);
-      transition: background 0.15s, border 0.15s, color 0.15s, opacity 0.15s;
-      opacity: 0.92;
-      outline: none;
-      padding: 0;
-      border-style: solid;
-    }
-    .sidebar-link-btn:hover .fav-remove,
-    .sidebar-link-btn:focus-within .fav-remove {
-      display: flex;
-    }
-    .fav-remove:active {
-      background: #ef4444;
-      color: #fff;
-      border-color: #fff;
-    }
-    .sidebar-link-btn.add {
-      background: #1e293b;
-      color: var(--accent);
-      border-style: dashed;
-      font-size: 28px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      line-height: 1;
-      padding: 0;
-    }
-    @media (max-width: 700px) {
-      .sidebar-links { left: 6px; gap: 10px; }
-      .sidebar-link-btn { width: 38px; height: 38px; font-size: 18px; }
-      .sidebar-link-btn img { width: 18px; height: 18px; }
-      .sidebar-link-btn .fav-remove { width: 16px; height: 16px; font-size: 11px; top: -6px; right: -6px; }
-    }
+      /* Sidebar de links favoritos */
+      .sidebar-links {
+        position: fixed;
+  top: 50%;
+  left: 0px;
+  transform: translateY(-50%);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  z-index: 1200;
+  background-color: #1c2435;
+  border-top-right-radius: 50%;
+  border-bottom-right-radius: 50%;
+      }
+      .sidebar-link-btn {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        background: var(--card);
+        border: 2px solid var(--accent);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--accent);
+        font-size: 24px;
+        box-shadow: 0 2px 8px 0 rgba(2, 6, 23, 0.13);
+        cursor: pointer;
+        transition: background 0.18s, border 0.18s, transform 0.15s;
+        outline: none;
+        margin-left: 1rem;
+        position: relative;
+        left: 0.9rem;
+      }
+      .sidebar-link-btn:hover {
+        background: var(--accent);
+        color: #041124;
+        border-color: #fff;
+        transform: scale(1.08);
+      }
+      .sidebar-link-btn img {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        object-fit: cover;
+        display: block;
+      }
+      .sidebar-link-btn .fav-remove {
+        display: none;
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        width: 22px;
+        height: 22px;
+        border-radius: 50%;
+        background: #181e2a;
+        border: 2px solid #ef4444;
+        color: #ef4444;
+        font-size: 15px;
+        font-weight: bold;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        z-index: 2;
+        box-shadow: 0 2px 8px 0 rgba(2, 6, 23, 0.13);
+        transition: background 0.15s, border 0.15s, color 0.15s, opacity 0.15s;
+        opacity: 0.92;
+        outline: none;
+        padding: 0;
+        border-style: solid;
+      }
+      .sidebar-link-btn:hover .fav-remove,
+      .sidebar-link-btn:focus-within .fav-remove {
+        display: flex;
+      }
+      .fav-remove:active {
+        background: #ef4444;
+        color: #fff;
+        border-color: #fff;
+      }
+      .sidebar-link-btn.add {
+        background: #1e293b;
+        color: var(--accent);
+        border-style: dashed;
+        font-size: 28px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 1;
+        padding: 0;
+      }
+      @media (max-width: 700px) {
+        .sidebar-links {
+          left: 6px;
+          gap: 10px;
+        }
+        .sidebar-link-btn {
+          width: 38px;
+          height: 38px;
+          font-size: 18px;
+        }
+        .sidebar-link-btn img {
+          width: 18px;
+          height: 18px;
+        }
+        .sidebar-link-btn .fav-remove {
+          width: 16px;
+          height: 16px;
+          font-size: 11px;
+          top: -6px;
+          right: -6px;
+        }
+      }
       :root {
         --bg: #0f1724;
         --card: #0b1220;
@@ -230,39 +251,43 @@
         gap: 22px;
         margin-top: 18px;
       }
-        /* Animación de aparición para juegos nuevos */
-        .game-appear {
-          animation: gameFadeIn 0.55s cubic-bezier(.33,1.02,.47,.98);
+      /* Animación de aparición para juegos nuevos */
+      .game-appear {
+        animation: gameFadeIn 0.55s cubic-bezier(0.33, 1.02, 0.47, 0.98);
+      }
+      @keyframes gameFadeIn {
+        0% {
+          opacity: 0;
+          transform: translateY(32px) scale(0.98);
+          box-shadow: none;
         }
-        @keyframes gameFadeIn {
-          0% {
-            opacity: 0;
-            transform: translateY(32px) scale(0.98);
-            box-shadow: none;
-          }
-          60% {
-            opacity: 1;
-            transform: translateY(-4px) scale(1.01);
-            box-shadow: 0 8px 32px 0 rgba(96,165,250,0.10);
-          }
-          100% {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-            box-shadow: 0 4px 24px 0 rgba(2,6,23,0.13);
-          }
+        60% {
+          opacity: 1;
+          transform: translateY(-4px) scale(1.01);
+          box-shadow: 0 8px 32px 0 rgba(96, 165, 250, 0.1);
         }
+        100% {
+          opacity: 1;
+          transform: translateY(0) scale(1);
+          box-shadow: 0 4px 24px 0 rgba(2, 6, 23, 0.13);
+        }
+      }
       .game {
-        background: linear-gradient(90deg, rgba(255,255,255,0.03) 60%, rgba(96,165,250,0.04) 100%);
+        background: linear-gradient(
+          90deg,
+          rgba(255, 255, 255, 0.03) 60%,
+          rgba(96, 165, 250, 0.04) 100%
+        );
         padding: 22px 28px;
         border-radius: 18px;
         display: flex;
         align-items: center;
         gap: 28px;
-        box-shadow: 0 4px 24px 0 rgba(2,6,23,0.13);
+        box-shadow: 0 4px 24px 0 rgba(2, 6, 23, 0.13);
         transition: box-shadow 0.2s, transform 0.2s;
       }
       .game:hover {
-        box-shadow: 0 8px 32px 0 rgba(96,165,250,0.10);
+        box-shadow: 0 8px 32px 0 rgba(96, 165, 250, 0.1);
         transform: translateY(-2px) scale(1.012);
       }
       .game .cover {
@@ -272,7 +297,7 @@
         overflow: hidden;
         background: #091224;
         flex-shrink: 0;
-        box-shadow: 0 2px 12px 0 rgba(2,6,23,0.18);
+        box-shadow: 0 2px 12px 0 rgba(2, 6, 23, 0.18);
         display: flex;
         align-items: center;
         justify-content: center;
@@ -298,7 +323,7 @@
         font-size: 20px;
         color: #fff;
         font-weight: 600;
-        text-shadow: 0 1px 2px rgba(2,6,23,0.10);
+        text-shadow: 0 1px 2px rgba(2, 6, 23, 0.1);
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
@@ -317,8 +342,8 @@
         font-size: 18px;
         padding: 2px 12px;
         border-radius: 8px;
-        background: rgba(255,255,255,0.07);
-        box-shadow: 0 1px 4px 0 rgba(2,6,23,0.10);
+        background: rgba(255, 255, 255, 0.07);
+        box-shadow: 0 1px 4px 0 rgba(2, 6, 23, 0.1);
         margin-left: 4px;
         transition: color 0.2s, background 0.2s;
         min-width: 44px;
@@ -437,7 +462,7 @@
         border-radius: 12px;
         width: 520px;
         max-width: calc(100% - 40px);
-        box-shadow: 0 8px 32px 0 rgba(2,6,23,0.18);
+        box-shadow: 0 8px 32px 0 rgba(2, 6, 23, 0.18);
         position: relative;
       }
       .modal-card label {
@@ -453,17 +478,17 @@
         padding: 10px;
         border-radius: 8px;
         border: 1px solid rgba(255, 255, 255, 0.05);
-        background: rgba(255,255,255,0.03);
+        background: rgba(255, 255, 255, 0.03);
         color: #e6eef8;
         font-size: 15px;
         transition: border 0.2s, box-shadow 0.2s;
-        box-shadow: 0 2px 8px rgba(2,6,23,0.10);
+        box-shadow: 0 2px 8px rgba(2, 6, 23, 0.1);
         appearance: none;
         outline: none;
       }
       .modal-card select:focus {
         border: 1.5px solid var(--accent);
-        box-shadow: 0 0 0 2px rgba(96,165,250,0.15);
+        box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.15);
       }
       .modal-card select option {
         background: #0b1220;
@@ -529,7 +554,7 @@
         border-radius: 3px;
         outline: none;
         margin: 0;
-        box-shadow: 0 1px 4px 0 rgba(2,6,23,0.10);
+        box-shadow: 0 1px 4px 0 rgba(2, 6, 23, 0.1);
         transition: background 0.2s;
         accent-color: var(--accent);
       }
@@ -541,7 +566,7 @@
         border-radius: 50%;
         background: #222c3a;
         border: 2px solid var(--accent);
-        box-shadow: 0 2px 8px 0 rgba(96,165,250,0.13);
+        box-shadow: 0 2px 8px 0 rgba(96, 165, 250, 0.13);
         cursor: pointer;
         transition: border 0.2s, background 0.2s;
       }
@@ -556,7 +581,7 @@
         border-radius: 50%;
         background: #222c3a;
         border: 2px solid var(--accent);
-        box-shadow: 0 2px 8px 0 rgba(96,165,250,0.13);
+        box-shadow: 0 2px 8px 0 rgba(96, 165, 250, 0.13);
         cursor: pointer;
         transition: border 0.2s, background 0.2s;
       }
@@ -571,7 +596,7 @@
         border-radius: 50%;
         background: #222c3a;
         border: 2px solid var(--accent);
-        box-shadow: 0 2px 8px 0 rgba(96,165,250,0.13);
+        box-shadow: 0 2px 8px 0 rgba(96, 165, 250, 0.13);
         cursor: pointer;
         transition: border 0.2s, background 0.2s;
       }
@@ -604,7 +629,7 @@
         color: var(--accent);
         font-size: 15px;
         font-weight: 600;
-        box-shadow: 0 2px 8px 0 rgba(2,6,23,0.13);
+        box-shadow: 0 2px 8px 0 rgba(2, 6, 23, 0.13);
         pointer-events: none;
         opacity: 0;
         transform: translateX(-50%) scale(0.95);
@@ -624,10 +649,14 @@
       }
 
       .power-card {
-        background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.02),
+          rgba(255, 255, 255, 0.01)
+        );
         padding: 14px 16px 12px 16px;
         border-radius: 12px;
-        box-shadow: 0 6px 18px rgba(2, 6, 23, 0.10);
+        box-shadow: 0 6px 18px rgba(2, 6, 23, 0.1);
         display: flex;
         flex-direction: column;
         gap: 4px;
@@ -643,12 +672,13 @@
         width: 100%;
         border-collapse: collapse;
       }
-      .power-card th, .power-card td {
+      .power-card th,
+      .power-card td {
         padding: 2px 4px;
         text-align: left;
       }
       .power-card tr:nth-child(even) td {
-        background: rgba(255,255,255,0.02);
+        background: rgba(255, 255, 255, 0.02);
       }
       .power-card tr.now td {
         background: var(--accent);
@@ -665,7 +695,7 @@
         border: 2px solid #222c3a;
         cursor: pointer;
         transition: box-shadow 0.15s, border 0.15s, transform 0.15s;
-        box-shadow: 0 1px 4px 0 rgba(2,6,23,0.10);
+        box-shadow: 0 1px 4px 0 rgba(2, 6, 23, 0.1);
       }
       #coverThumbGallery img.selected {
         border: 2.5px solid var(--accent);
@@ -683,13 +713,13 @@
         object-fit: cover;
         border-radius: 10px;
         border: 2px solid #222c3a;
-        box-shadow: 0 2px 8px 0 rgba(2,6,23,0.13);
+        box-shadow: 0 2px 8px 0 rgba(2, 6, 23, 0.13);
       }
     </style>
   </head>
   <body>
-  <!-- Sidebar de links favoritos -->
-  <nav class="sidebar-links" id="sidebarLinks"></nav>
+    <!-- Sidebar de links favoritos -->
+    <nav class="sidebar-links" id="sidebarLinks"></nav>
 
     <div class="wrap">
       <header>
@@ -808,10 +838,29 @@
           <div class="row">
             <div>
               <label>Puntuación (0-100)</label>
-              <div class="score-slider-wrap" style="flex:1;">
-                <input id="gScore" type="range" min="0" max="100" step="1" value="0" />
+              <div class="score-slider-wrap" style="flex: 1">
+                <input
+                  id="gScore"
+                  type="range"
+                  min="0"
+                  max="100"
+                  step="1"
+                  value="0"
+                />
                 <span class="score-bubble" id="gScoreBubble">0</span>
-                <span id="gScoreValue" style="min-width:36px;text-align:right;font-size:15px;color:var(--accent);font-weight:600;position:relative;top:1px;">0</span>
+                <span
+                  id="gScoreValue"
+                  style="
+                    min-width: 36px;
+                    text-align: right;
+                    font-size: 15px;
+                    color: var(--accent);
+                    font-weight: 600;
+                    position: relative;
+                    top: 1px;
+                  "
+                  >0</span
+                >
               </div>
             </div>
             <div>
@@ -824,17 +873,26 @@
             portada.</label
           >
           <input id="gCover" placeholder="https://...jpg" />
-          <div style="margin-top:8px;">
-            <div style="display:flex;gap:8px;align-items:center;">
+          <div style="margin-top: 8px">
+            <div style="display: flex; gap: 8px; align-items: center">
               <button type="button" id="btnFindCover" class="small">
                 Buscar portada ahora
               </button>
-              <div id="coverStatus" style="font-size: 13px; color: var(--muted)">
+              <div
+                id="coverStatus"
+                style="font-size: 13px; color: var(--muted)"
+              >
                 Estado: sin buscar
               </div>
             </div>
-            <div id="coverThumbGallery" style="display:flex;gap:8px;margin:10px 0 8px 0;"></div>
-            <div id="coverPreviewWrap" style="display:flex;justify-content:center;"></div>
+            <div
+              id="coverThumbGallery"
+              style="display: flex; gap: 8px; margin: 10px 0 8px 0"
+            ></div>
+            <div
+              id="coverPreviewWrap"
+              style="display: flex; justify-content: center"
+            ></div>
           </div>
           <label>Notas</label>
           <textarea id="gNotes" rows="3"></textarea>
@@ -856,26 +914,62 @@
 
     <!-- Modal de confirmación para eliminar juego -->
     <div id="confirmModal" class="modal" role="dialog" aria-hidden="true">
-      <div class="modal-card" style="max-width:340px;padding:28px 24px;text-align:center;">
-        <div style="font-size:18px;font-weight:600;color:#fff;margin-bottom:10px;">¿Eliminar juego?</div>
-        <div id="confirmGameTitle" style="color:var(--muted);font-size:15px;margin-bottom:18px;"></div>
-        <div style="display:flex;gap:12px;justify-content:center;">
-          <button id="btnConfirmDelete" class="small" style="background:#ef4444;color:#fff;min-width:80px;">Eliminar</button>
-          <button id="btnCancelDelete" class="small" style="background:#222c3a;color:#fff;min-width:80px;">Cancelar</button>
+      <div
+        class="modal-card"
+        style="max-width: 340px; padding: 28px 24px; text-align: center"
+      >
+        <div
+          style="
+            font-size: 18px;
+            font-weight: 600;
+            color: #fff;
+            margin-bottom: 10px;
+          "
+        >
+          ¿Eliminar juego?
+        </div>
+        <div
+          id="confirmGameTitle"
+          style="color: var(--muted); font-size: 15px; margin-bottom: 18px"
+        ></div>
+        <div style="display: flex; gap: 12px; justify-content: center">
+          <button
+            id="btnConfirmDelete"
+            class="small"
+            style="background: #ef4444; color: #fff; min-width: 80px"
+          >
+            Eliminar
+          </button>
+          <button
+            id="btnCancelDelete"
+            class="small"
+            style="background: #222c3a; color: #fff; min-width: 80px"
+          >
+            Cancelar
+          </button>
         </div>
       </div>
     </div>
 
     <!-- Modal para añadir link favorito -->
     <div id="favModal" class="modal" role="dialog" aria-hidden="true">
-      <div class="modal-card" style="max-width:340px;padding:28px 24px;">
-        <h3 style="margin-top:0;color:#fff;font-size:20px;">Añadir link favorito</h3>
+      <div class="modal-card" style="max-width: 340px; padding: 28px 24px">
+        <h3 style="margin-top: 0; color: #fff; font-size: 20px">
+          Añadir link favorito
+        </h3>
         <form id="favForm">
-          <label style="margin-top:8px;">URL de la página</label>
+          <label style="margin-top: 8px">URL de la página</label>
           <input id="favUrl" type="url" placeholder="https://..." required />
-          <label style="margin-top:8px;">Icono (emoji o URL de imagen)</label>
+          <label style="margin-top: 8px">Icono (emoji o URL de imagen)</label>
           <input id="favIcon" placeholder="🔗 o https://...jpg" />
-          <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px;">
+          <div
+            style="
+              display: flex;
+              gap: 8px;
+              justify-content: flex-end;
+              margin-top: 16px;
+            "
+          >
             <button type="button" id="favCancel" class="small">Cancelar</button>
             <button type="submit" class="small">Guardar</button>
           </div>
@@ -888,105 +982,114 @@
     <!-- Firebase Realtime Database -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
     <script>
-    // =====================
-    // Links favoritos sidebar
-    // =====================
-    const FAV_KEY = "homepage_favlinks";
+      // =====================
+      // Links favoritos sidebar
+      // =====================
+      const FAV_KEY = "homepage_favlinks";
 
-    // Links favoritos sincronizados con Firebase
-    function getFavLinks(cb) {
-      db.ref('favlinks').once('value').then(snapshot => {
-        const arr = snapshot.val() || [];
+      // Links favoritos sincronizados con Firebase
+      function getFavLinks(cb) {
+        db.ref("favlinks")
+          .once("value")
+          .then((snapshot) => {
+            const arr = snapshot.val() || [];
+            localStorage.setItem(FAV_KEY, JSON.stringify(arr));
+            cb(arr);
+          })
+          .catch(() => {
+            // Si falla, usar local
+            try {
+              cb(JSON.parse(localStorage.getItem(FAV_KEY)) || []);
+            } catch {
+              cb([]);
+            }
+          });
+      }
+      function saveFavLinks(arr) {
         localStorage.setItem(FAV_KEY, JSON.stringify(arr));
-        cb(arr);
-      }).catch(() => {
-        // Si falla, usar local
-        try {
-          cb(JSON.parse(localStorage.getItem(FAV_KEY)) || []);
-        } catch { cb([]); }
-      });
-    }
-    function saveFavLinks(arr) {
-      localStorage.setItem(FAV_KEY, JSON.stringify(arr));
-      db.ref('favlinks').set(arr);
-    }
-    function renderFavLinks() {
-      getFavLinks(favs => {
-        const nav = document.getElementById("sidebarLinks");
-        nav.innerHTML = "";
-        favs.forEach((fav, i) => {
-          const btn = document.createElement("button");
-          btn.className = "sidebar-link-btn";
-          btn.title = fav.url;
-          btn.type = "button";
-          btn.onclick = (e) => {
-            // Si se hace click en la X, no abrir link
-            if (e.target.classList.contains('fav-remove')) return;
-            window.open(fav.url, "_blank");
-          };
-          if (fav.icon && fav.icon.startsWith("http")) {
-            const img = document.createElement("img");
-            img.src = fav.icon;
-            img.alt = "icono";
-            btn.appendChild(img);
-          } else {
-            btn.textContent = fav.icon || "🔗";
-          }
-          // Botón eliminar
-          const delBtn = document.createElement("button");
-          delBtn.className = "fav-remove";
-          delBtn.type = "button";
-          delBtn.title = "Eliminar link";
-          delBtn.innerHTML = "&#10005;"; // X
-          delBtn.onclick = (ev) => {
-            ev.stopPropagation();
-            getFavLinks(favs2 => {
-              favs2.splice(i, 1);
-              saveFavLinks(favs2);
-              renderFavLinks();
-            });
-          };
-          btn.appendChild(delBtn);
-          nav.appendChild(btn);
+        db.ref("favlinks").set(arr);
+      }
+      function renderFavLinks() {
+        getFavLinks((favs) => {
+          const nav = document.getElementById("sidebarLinks");
+          nav.innerHTML = "";
+          favs.forEach((fav, i) => {
+            const btn = document.createElement("button");
+            btn.className = "sidebar-link-btn";
+            btn.title = fav.url;
+            btn.type = "button";
+            btn.onclick = (e) => {
+              // Si se hace click en la X, no abrir link
+              if (e.target.classList.contains("fav-remove")) return;
+              window.open(fav.url, "_blank");
+            };
+            if (fav.icon && fav.icon.startsWith("http")) {
+              const img = document.createElement("img");
+              img.src = fav.icon;
+              img.alt = "icono";
+              btn.appendChild(img);
+            } else {
+              btn.textContent = fav.icon || "🔗";
+            }
+            // Botón eliminar
+            const delBtn = document.createElement("button");
+            delBtn.className = "fav-remove";
+            delBtn.type = "button";
+            delBtn.title = "Eliminar link";
+            delBtn.innerHTML = "&#10005;"; // X
+            delBtn.onclick = (ev) => {
+              ev.stopPropagation();
+              getFavLinks((favs2) => {
+                favs2.splice(i, 1);
+                saveFavLinks(favs2);
+                renderFavLinks();
+              });
+            };
+            btn.appendChild(delBtn);
+            nav.appendChild(btn);
+          });
+          // Botón añadir
+          const addBtn = document.createElement("button");
+          addBtn.className = "sidebar-link-btn add";
+          addBtn.title = "Añadir link favorito";
+          addBtn.innerHTML = "+";
+          addBtn.onclick = () => openFavModal();
+          nav.appendChild(addBtn);
         });
-        // Botón añadir
-        const addBtn = document.createElement("button");
-        addBtn.className = "sidebar-link-btn add";
-        addBtn.title = "Añadir link favorito";
-        addBtn.innerHTML = "+";
-        addBtn.onclick = () => openFavModal();
-        nav.appendChild(addBtn);
-      });
-    }
-    function openFavModal() {
-      document.getElementById("favModal").classList.add("show");
-      document.getElementById("favModal").setAttribute("aria-hidden", "false");
-      document.getElementById("favForm").reset();
-      document.getElementById("favUrl").focus();
-    }
-    function closeFavModal() {
-      document.getElementById("favModal").classList.remove("show");
-      document.getElementById("favModal").setAttribute("aria-hidden", "true");
-    }
-    document.addEventListener("DOMContentLoaded", () => {
-      renderFavLinks();
-      document.getElementById("favForm").addEventListener("submit", (e) => {
-        e.preventDefault();
-        const url = document.getElementById("favUrl").value.trim();
-        let icon = document.getElementById("favIcon").value.trim();
-        if (!icon) icon = "🔗";
-        getFavLinks(favs => {
-          favs.push({ url, icon });
-          saveFavLinks(favs);
-          renderFavLinks();
-          closeFavModal();
+      }
+      function openFavModal() {
+        document.getElementById("favModal").classList.add("show");
+        document
+          .getElementById("favModal")
+          .setAttribute("aria-hidden", "false");
+        document.getElementById("favForm").reset();
+        document.getElementById("favUrl").focus();
+      }
+      function closeFavModal() {
+        document.getElementById("favModal").classList.remove("show");
+        document.getElementById("favModal").setAttribute("aria-hidden", "true");
+      }
+      document.addEventListener("DOMContentLoaded", () => {
+        renderFavLinks();
+        document.getElementById("favForm").addEventListener("submit", (e) => {
+          e.preventDefault();
+          const url = document.getElementById("favUrl").value.trim();
+          let icon = document.getElementById("favIcon").value.trim();
+          if (!icon) icon = "🔗";
+          getFavLinks((favs) => {
+            favs.push({ url, icon });
+            saveFavLinks(favs);
+            renderFavLinks();
+            closeFavModal();
+          });
+        });
+        document
+          .getElementById("favCancel")
+          .addEventListener("click", closeFavModal);
+        document.getElementById("favModal").addEventListener("click", (e) => {
+          if (e.target === document.getElementById("favModal")) closeFavModal();
         });
       });
-      document.getElementById("favCancel").addEventListener("click", closeFavModal);
-      document.getElementById("favModal").addEventListener("click", (e) => {
-        if (e.target === document.getElementById("favModal")) closeFavModal();
-      });
-    });
 
       // =====================
       // Configuración y Constantes
@@ -994,11 +1097,12 @@
       const FIREBASE_CONFIG = {
         apiKey: "TU_API_KEY",
         authDomain: "juegos-completados-a3005.firebaseapp.com",
-        databaseURL: "https://juegos-completados-a3005-default-rtdb.europe-west1.firebasedatabase.app",
+        databaseURL:
+          "https://juegos-completados-a3005-default-rtdb.europe-west1.firebasedatabase.app",
         projectId: "juegos-completados-a3005",
         storageBucket: "juegos-completados-a3005.appspot.com",
         messagingSenderId: "TU_MESSAGING_SENDER_ID",
-        appId: "TU_APP_ID"
+        appId: "TU_APP_ID",
       };
       const RAWG_API_KEY = "f9f8f4e16c9740248b1c67e71720e801";
       const WEATHER_KEY = "homepage_weather_loc";
@@ -1035,7 +1139,7 @@
         confirmGameTitle: "#confirmGameTitle",
         googleForm: "#googleForm",
         googleQuery: "#googleQuery",
-        btnSearch: "#btnSearch"
+        btnSearch: "#btnSearch",
       };
 
       // =====================
@@ -1048,16 +1152,21 @@
       // Helpers
       // =====================
       const $ = (sel) => document.querySelector(sel);
-      const fmtDate = (d) => d ? new Date(d).toLocaleDateString("es-ES") : "-";
+      const fmtDate = (d) =>
+        d ? new Date(d).toLocaleDateString("es-ES") : "-";
       function escapeHtml(s) {
         if (!s) return "";
-        return String(s).replace(/[&<>"]|'/g, (m) => ({
-          "&": "&amp;",
-          "<": "&lt;",
-          ">": "&gt;",
-          '"': "&quot;",
-          "'": "&#39;"
-        })[m]);
+        return String(s).replace(
+          /[&<>"]|'/g,
+          (m) =>
+            ({
+              "&": "&amp;",
+              "<": "&lt;",
+              ">": "&gt;",
+              '"': "&quot;",
+              "'": "&#39;",
+            }[m])
+        );
       }
       function debounce(fn, wait) {
         let t;
@@ -1099,23 +1208,26 @@
         82: "Chubascos intensos",
         95: "Tormenta",
         96: "Tormenta con granizo ligero",
-        99: "Tormenta con granizo fuerte"
+        99: "Tormenta con granizo fuerte",
       };
 
       // =====================
       // CRUD y almacenamiento
       // =====================
       function loadGames() {
-        db.ref('games').once('value').then(snapshot => {
-          games = snapshot.val() || [];
-          renderGames();
-        }).catch(() => {
-          games = [];
-          renderGames();
-        });
+        db.ref("games")
+          .once("value")
+          .then((snapshot) => {
+            games = snapshot.val() || [];
+            renderGames();
+          })
+          .catch(() => {
+            games = [];
+            renderGames();
+          });
       }
       function saveGames() {
-        db.ref('games').set(games);
+        db.ref("games").set(games);
       }
 
       // =====================
@@ -1125,7 +1237,8 @@
         const container = $(SELECTORS.gamesList);
         container.innerHTML = "";
         if (!games.length) {
-          container.innerHTML = '<div style="color:var(--muted)">No hay juegos todavía. Añade el primero.</div>';
+          container.innerHTML =
+            '<div style="color:var(--muted)">No hay juegos todavía. Añade el primero.</div>';
           return;
         }
         // Ordenar por fecha descendente, si no hay fecha usar id (timestamp)
@@ -1138,10 +1251,15 @@
           const div = document.createElement("div");
           div.className = "game";
           // Color score: de rojo (#ef4444) a verde (#22c55e)
-          let scoreColor = '#9aa4b2';
-          if (typeof g.score === 'number') {
-            const r1=239,g1=68,b1=68, r2=34,g2=197,b2=94;
-            const t = Math.max(0, Math.min(1, g.score/100));
+          let scoreColor = "#9aa4b2";
+          if (typeof g.score === "number") {
+            const r1 = 239,
+              g1 = 68,
+              b1 = 68,
+              r2 = 34,
+              g2 = 197,
+              b2 = 94;
+            const t = Math.max(0, Math.min(1, g.score / 100));
             const r = Math.round(r1 + (r2 - r1) * t);
             const gC = Math.round(g1 + (g2 - g1) * t);
             const b = Math.round(b1 + (b2 - b1) * t);
@@ -1149,9 +1267,10 @@
           }
           div.innerHTML = `
             <div class="cover">
-              ${g.cover
-                ? `<img src="${g.cover}" alt="cover">`
-                : `<div class="no-cover">No cover</div>`
+              ${
+                g.cover
+                  ? `<img src="${g.cover}" alt="cover">`
+                  : `<div class="no-cover">No cover</div>`
               }
             </div>
             <div class="info">
@@ -1159,13 +1278,22 @@
               <div class="meta">
                 <span>${escapeHtml(g.platform || "Sin plataforma")}</span>
                 <span>${fmtDate(g.date)}</span>
-                <span class="score" style="color:${scoreColor};background:rgba(255,255,255,0.10)">${g.score ?? "-"}</span>
+                <span class="score" style="color:${scoreColor};background:rgba(255,255,255,0.10)">${
+            g.score ?? "-"
+          }</span>
               </div>
-              <div class="notes">${escapeHtml(g.notes || "").slice(0, 180)}</div>
+              <div class="notes">${escapeHtml(g.notes || "").slice(
+                0,
+                180
+              )}</div>
             </div>
             <div class="actions">
-              <button class="small" onclick="openEdit('${g.id}')">Editar</button>
-              <button class="small" onclick="deleteGame('${g.id}')">Borrar</button>
+              <button class="small" onclick="openEdit('${
+                g.id
+              }')">Editar</button>
+              <button class="small" onclick="deleteGame('${
+                g.id
+              }')">Borrar</button>
             </div>
           `;
           if (g.id === newGameId) {
@@ -1202,16 +1330,18 @@
         renderGames();
       }
       function deleteGame(id) {
-        const g = games.find(x => x.id === id);
+        const g = games.find((x) => x.id === id);
         if (!g) return;
         pendingDeleteId = id;
-        $(SELECTORS.confirmGameTitle).textContent = g.title ? `"${g.title}"` : '';
-        $(SELECTORS.confirmModal).classList.add('show');
-        $(SELECTORS.confirmModal).setAttribute('aria-hidden', 'false');
+        $(SELECTORS.confirmGameTitle).textContent = g.title
+          ? `"${g.title}"`
+          : "";
+        $(SELECTORS.confirmModal).classList.add("show");
+        $(SELECTORS.confirmModal).setAttribute("aria-hidden", "false");
       }
       function closeConfirmModal() {
-        $(SELECTORS.confirmModal).classList.remove('show');
-        $(SELECTORS.confirmModal).setAttribute('aria-hidden', 'true');
+        $(SELECTORS.confirmModal).classList.remove("show");
+        $(SELECTORS.confirmModal).setAttribute("aria-hidden", "true");
         pendingDeleteId = null;
       }
       function openEdit(id) {
@@ -1227,7 +1357,9 @@
         $(SELECTORS.gHours).value = g.hours ?? "";
         $(SELECTORS.gCover).value = g.cover || "";
         $(SELECTORS.gNotes).value = g.notes || "";
-        $(SELECTORS.coverStatus).textContent = g.cover ? "Portada ya presente" : "Sin portada";
+        $(SELECTORS.coverStatus).textContent = g.cover
+          ? "Portada ya presente"
+          : "Sin portada";
         $(SELECTORS.modal).classList.add("show");
         $(SELECTORS.modal).setAttribute("aria-hidden", "false");
       }
@@ -1236,7 +1368,9 @@
       // Export / Import
       // =====================
       function exportJSON() {
-        const blob = new Blob([JSON.stringify(games, null, 2)], { type: "application/json" });
+        const blob = new Blob([JSON.stringify(games, null, 2)], {
+          type: "application/json",
+        });
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
@@ -1294,7 +1428,7 @@
               }
             }
           }
-          imgs = imgs.filter(Boolean).slice(0,4);
+          imgs = imgs.filter(Boolean).slice(0, 4);
           coverCache[q] = imgs;
           return imgs;
         } catch (err) {
@@ -1311,15 +1445,25 @@
         try {
           $(SELECTORS.wTemp).textContent = "...";
           $(SELECTORS.wDesc).textContent = "Cargando...";
-          const url = `https://api.open-meteo.com/v1/forecast?latitude=${encodeURIComponent(lat)}&longitude=${encodeURIComponent(lon)}&current_weather=true&temperature_unit=celsius&timezone=auto`;
+          const url = `https://api.open-meteo.com/v1/forecast?latitude=${encodeURIComponent(
+            lat
+          )}&longitude=${encodeURIComponent(
+            lon
+          )}&current_weather=true&temperature_unit=celsius&timezone=auto`;
           const res = await fetch(url);
           if (!res.ok) throw new Error("Respuesta del servidor no válida");
           const data = await res.json();
           if (data && data.current_weather) {
             const cw = data.current_weather;
             $(SELECTORS.wTemp).textContent = Math.round(cw.temperature) + " °C";
-            $(SELECTORS.wDesc).textContent = (weatherCodes[cw.weathercode] || "Condición #" + cw.weathercode) + " · velocidad " + cw.windspeed + " m/s";
-            $(SELECTORS.wPlace).textContent = `Lat ${lat.toFixed(4)}, Lon ${lon.toFixed(4)}`;
+            $(SELECTORS.wDesc).textContent =
+              (weatherCodes[cw.weathercode] || "Condición #" + cw.weathercode) +
+              " · velocidad " +
+              cw.windspeed +
+              " m/s";
+            $(SELECTORS.wPlace).textContent = `Lat ${lat.toFixed(
+              4
+            )}, Lon ${lon.toFixed(4)}`;
             localStorage.setItem(WEATHER_KEY, JSON.stringify({ lat, lon }));
           } else {
             $(SELECTORS.wDesc).textContent = "No hay datos actuales";
@@ -1361,7 +1505,9 @@
         const scoreSlider = document.getElementById("gScore");
         const scoreValue = document.getElementById("gScoreValue");
         const scoreBubble = document.getElementById("gScoreBubble");
-        const scoreWrap = scoreSlider ? scoreSlider.closest('.score-slider-wrap') : null;
+        const scoreWrap = scoreSlider
+          ? scoreSlider.closest(".score-slider-wrap")
+          : null;
         if (!scoreSlider || !scoreValue || !scoreBubble || !scoreWrap) return;
         scoreValue.textContent = val;
         scoreBubble.textContent = val;
@@ -1372,17 +1518,20 @@
         const thumbWidth = 16;
         const usableWidth = sliderRect.width - thumbWidth;
         let px = percent * usableWidth + thumbWidth / 2;
-        px = Math.max(thumbWidth / 2, Math.min(sliderRect.width - thumbWidth / 2, px));
-        scoreBubble.style.left = px + 'px';
+        px = Math.max(
+          thumbWidth / 2,
+          Math.min(sliderRect.width - thumbWidth / 2, px)
+        );
+        scoreBubble.style.left = px + "px";
       }
 
       // =====================
       // Inicialización y eventos
       // =====================
       document.addEventListener("DOMContentLoaded", () => {
-    loadGames();
-    renderGames();
-    renderFavLinks();
+        loadGames();
+        renderGames();
+        renderFavLinks();
 
         // Buscador Google
         $(SELECTORS.btnSearch).addEventListener("click", doSearch);
@@ -1418,26 +1567,31 @@
             return;
           }
           $(SELECTORS.coverStatus).textContent = "Buscando...";
-          const gallery = document.getElementById('coverThumbGallery');
-          const previewWrap = document.getElementById('coverPreviewWrap');
-          gallery.innerHTML = '';
-          previewWrap.innerHTML = '';
+          const gallery = document.getElementById("coverThumbGallery");
+          const previewWrap = document.getElementById("coverPreviewWrap");
+          gallery.innerHTML = "";
+          previewWrap.innerHTML = "";
           try {
             const imgs = await fetchCoverRAWG(title);
             if (imgs && imgs.length) {
               imgs.forEach((imgUrl, idx) => {
-                const thumb = document.createElement('img');
+                const thumb = document.createElement("img");
                 thumb.src = imgUrl;
-                thumb.title = 'Elegir esta portada';
-                thumb.addEventListener('click', () => {
+                thumb.title = "Elegir esta portada";
+                thumb.addEventListener("click", () => {
                   $(SELECTORS.gCover).value = imgUrl;
                   updateCoverPreview();
-                  gallery.querySelectorAll('img').forEach(img => img.classList.remove('selected'));
-                  thumb.classList.add('selected');
+                  gallery
+                    .querySelectorAll("img")
+                    .forEach((img) => img.classList.remove("selected"));
+                  thumb.classList.add("selected");
                 });
                 // Si es la actual, resaltar
-                if ($(SELECTORS.gCover).value === imgUrl || (idx === 0 && !$(SELECTORS.gCover).value)) {
-                  thumb.classList.add('selected');
+                if (
+                  $(SELECTORS.gCover).value === imgUrl ||
+                  (idx === 0 && !$(SELECTORS.gCover).value)
+                ) {
+                  thumb.classList.add("selected");
                 }
                 gallery.appendChild(thumb);
               });
@@ -1445,13 +1599,15 @@
               if (!$(SELECTORS.gCover).value) {
                 $(SELECTORS.gCover).value = imgs[0];
                 updateCoverPreview();
-                gallery.querySelector('img').classList.add('selected');
+                gallery.querySelector("img").classList.add("selected");
               } else {
                 updateCoverPreview();
               }
-              $(SELECTORS.coverStatus).textContent = "Elige la portada correcta";
+              $(SELECTORS.coverStatus).textContent =
+                "Elige la portada correcta";
             } else {
-              $(SELECTORS.coverStatus).textContent = "No encontrada (usa URL manualmente o guarda y luego edita)";
+              $(SELECTORS.coverStatus).textContent =
+                "No encontrada (usa URL manualmente o guarda y luego edita)";
             }
           } catch (e) {
             $(SELECTORS.coverStatus).textContent = "Error al buscar";
@@ -1460,41 +1616,44 @@
         });
 
         // Previsualización de portada al cambiar input manualmente
-        $(SELECTORS.gCover).addEventListener('input', () => {
+        $(SELECTORS.gCover).addEventListener("input", () => {
           var val = $(SELECTORS.gCover).value.trim();
-          document.getElementById('coverThumbGallery').querySelectorAll('img').forEach(img => {
-            img.classList.remove('selected');
-            if (img.src === val) {
-              img.classList.add('selected');
-            }
-          });
+          document
+            .getElementById("coverThumbGallery")
+            .querySelectorAll("img")
+            .forEach((img) => {
+              img.classList.remove("selected");
+              if (img.src === val) {
+                img.classList.add("selected");
+              }
+            });
           updateCoverPreview();
         });
         // Mostrar previsualización al abrir modal de edición/añadir
         function updateCoverPreview() {
           const url = $(SELECTORS.gCover).value.trim();
-          const previewWrap = document.getElementById('coverPreviewWrap');
-          previewWrap.innerHTML = '';
+          const previewWrap = document.getElementById("coverPreviewWrap");
+          previewWrap.innerHTML = "";
           if (url) {
-            const img = document.createElement('img');
+            const img = document.createElement("img");
             img.src = url;
-            img.alt = 'Previsualización de portada';
+            img.alt = "Previsualización de portada";
             previewWrap.appendChild(img);
           }
         }
         // Llamar al abrir modal
         const origOpenEdit = window.openEdit;
-        window.openEdit = function(id) {
+        window.openEdit = function (id) {
           origOpenEdit(id);
           setTimeout(() => {
-            document.getElementById('coverThumbGallery').innerHTML = '';
+            document.getElementById("coverThumbGallery").innerHTML = "";
             updateCoverPreview();
           }, 50);
         };
         // Al abrir modal de añadir
-        $(SELECTORS.btnAdd).addEventListener('click', () => {
+        $(SELECTORS.btnAdd).addEventListener("click", () => {
           setTimeout(() => {
-            document.getElementById('coverThumbGallery').innerHTML = '';
+            document.getElementById("coverThumbGallery").innerHTML = "";
             updateCoverPreview();
           }, 50);
         });
@@ -1506,8 +1665,12 @@
             title: $(SELECTORS.gTitle).value.trim(),
             platform: $(SELECTORS.gPlatform).value.trim(),
             date: $(SELECTORS.gDate).value || "",
-            score: $(SELECTORS.gScore).value ? Number($(SELECTORS.gScore).value) : null,
-            hours: $(SELECTORS.gHours).value ? Number($(SELECTORS.gHours).value) : null,
+            score: $(SELECTORS.gScore).value
+              ? Number($(SELECTORS.gScore).value)
+              : null,
+            hours: $(SELECTORS.gHours).value
+              ? Number($(SELECTORS.gHours).value)
+              : null,
             cover: $(SELECTORS.gCover).value.trim(),
             notes: $(SELECTORS.gNotes).value.trim(),
           };
@@ -1518,9 +1681,11 @@
               const imgs = await fetchCoverRAWG(payload.title);
               if (imgs && imgs.length) {
                 payload.cover = imgs[0];
-                $(SELECTORS.coverStatus).textContent = "Portada encontrada y asignada";
+                $(SELECTORS.coverStatus).textContent =
+                  "Portada encontrada y asignada";
               } else {
-                $(SELECTORS.coverStatus).textContent = "No se encontró portada automáticamente";
+                $(SELECTORS.coverStatus).textContent =
+                  "No se encontró portada automáticamente";
               }
             } catch (err) {
               console.warn(err);
@@ -1589,13 +1754,16 @@
         });
 
         // Confirmación de borrado
-        $(SELECTORS.btnCancelDelete).addEventListener('click', closeConfirmModal);
-        $(SELECTORS.confirmModal).addEventListener('click', (e) => {
+        $(SELECTORS.btnCancelDelete).addEventListener(
+          "click",
+          closeConfirmModal
+        );
+        $(SELECTORS.confirmModal).addEventListener("click", (e) => {
           if (e.target === $(SELECTORS.confirmModal)) closeConfirmModal();
         });
-        $(SELECTORS.btnConfirmDelete).addEventListener('click', () => {
+        $(SELECTORS.btnConfirmDelete).addEventListener("click", () => {
           if (pendingDeleteId) {
-            games = games.filter(x => x.id !== pendingDeleteId);
+            games = games.filter((x) => x.id !== pendingDeleteId);
             saveGames();
             renderGames();
             closeConfirmModal();
@@ -1604,32 +1772,37 @@
 
         // Slider puntuación: sincronizar valor y burbuja
         const scoreSlider = $(SELECTORS.gScore);
-        const scoreWrap = scoreSlider.closest('.score-slider-wrap');
+        const scoreWrap = scoreSlider.closest(".score-slider-wrap");
         scoreSlider.addEventListener("input", (e) => {
           updateScoreUI(e.target.value);
         });
         scoreSlider.addEventListener("mousedown", () => {
-          scoreWrap.classList.add('active');
+          scoreWrap.classList.add("active");
           updateScoreUI(scoreSlider.value);
         });
         scoreSlider.addEventListener("touchstart", () => {
-          scoreWrap.classList.add('active');
+          scoreWrap.classList.add("active");
           updateScoreUI(scoreSlider.value);
         });
-        ["mouseup","mouseleave","touchend","blur"].forEach(ev => {
+        ["mouseup", "mouseleave", "touchend", "blur"].forEach((ev) => {
           scoreSlider.addEventListener(ev, () => {
-            scoreWrap.classList.remove('active');
+            scoreWrap.classList.remove("active");
             updateScoreUI(scoreSlider.value);
           });
         });
         const modal = $(SELECTORS.modal);
         const observer = new MutationObserver(() => {
-          if (modal.classList.contains('show')) {
+          if (modal.classList.contains("show")) {
             setTimeout(() => updateScoreUI(scoreSlider.value), 10);
           }
         });
-        observer.observe(modal, { attributes: true, attributeFilter: ['class'] });
-        window.addEventListener('resize', () => updateScoreUI(scoreSlider.value));
+        observer.observe(modal, {
+          attributes: true,
+          attributeFilter: ["class"],
+        });
+        window.addEventListener("resize", () =>
+          updateScoreUI(scoreSlider.value)
+        );
         updateScoreUI(scoreSlider.value);
       });
 
