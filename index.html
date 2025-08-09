@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Inicio — Página personal</title>
+    <style>
+      :root {
+        --bg: #0f1724;
+        --card: #0b1220;
+        --muted: #9aa4b2;
+        --accent: #60a5fa;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      html,
+      body {
+        height: 100%;
+        margin: 0;
+        font-family: Inter, Segoe UI, Roboto, system-ui, -apple-system,
+          "Helvetica Neue", Arial;
+        color: #e6eef8;
+        background: linear-gradient(180deg, #051023 0%, #071128 100%);
+      }
+      .wrap {
+        max-width: 1100px;
+        margin: 28px auto;
+        padding: 18px;
+      }
+      header {
+        display: flex;
+        align-items: center;
+        gap: 16px;
+      }
+      h1 {
+        font-size: 20px;
+        margin: 0;
+        color: #fff;
+      }
+
+      .top {
+        display: grid;
+        grid-template-columns: 1fr 320px;
+        gap: 18px;
+        margin-top: 18px;
+      }
+
+      .search-card {
+        background: rgba(255, 255, 255, 0.03);
+        padding: 18px;
+        border-radius: 12px;
+        box-shadow: 0 6px 18px rgba(2, 6, 23, 0.6);
+      }
+      .search {
+        display: flex;
+        gap: 8px;
+      }
+      .search input {
+        flex: 1;
+        padding: 12px;
+        border-radius: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        background: transparent;
+        color: #fff;
+        font-size: 16px;
+      }
+      .search button {
+        padding: 10px 14px;
+        border-radius: 10px;
+        border: 0;
+        background: var(--accent);
+        color: #042;
+        cursor: pointer;
+      }
+      .hint {
+        margin-top: 8px;
+        color: var(--muted);
+        font-size: 13px;
+      }
+
+      .weather-card {
+        background: linear-gradient(
+          180deg,
+          rgba(255, 255, 255, 0.02),
+          rgba(255, 255, 255, 0.01)
+        );
+        padding: 14px;
+        border-radius: 12px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .weather-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .temp {
+        font-size: 36px;
+        color: #fff;
+      }
+      .cond {
+        color: var(--muted);
+        font-size: 14px;
+      }
+      .weather-controls {
+        display: flex;
+        gap: 8px;
+      }
+      .weather-controls input {
+        padding: 8px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.06);
+        background: transparent;
+        color: #fff;
+        width: 110px;
+      }
+      .btn {
+        padding: 8px 10px;
+        border-radius: 8px;
+        border: 0;
+        background: #111827;
+        color: #fff;
+        cursor: pointer;
+      }
+
+      .games {
+        margin-top: 20px;
+      }
+      .games-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+      .games-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 12px;
+        margin-top: 12px;
+      }
+      .game {
+        background: rgba(255, 255, 255, 0.03);
+        padding: 12px;
+        border-radius: 10px;
+      }
+      .game h3 {
+        margin: 0 0 6px 0;
+        font-size: 16px;
+      }
+      .game .meta {
+        color: var(--muted);
+        font-size: 13px;
+        margin-bottom: 8px;
+      }
+      .game .score {
+        font-weight: 700;
+      }
+      .actions {
+        display: flex;
+        gap: 8px;
+      }
+      .small {
+        padding: 6px 8px;
+        border-radius: 8px;
+        border: 0;
+        background: #0b1220;
+        color: #fff;
+        cursor: pointer;
+      }
+
+      /* modal */
+      .modal {
+        position: fixed;
+        inset: 0;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        background: rgba(2, 6, 23, 0.6);
+      }
+      .modal.show {
+        display: flex;
+      }
+      .modal-card {
+        background: #041124;
+        padding: 18px;
+        border-radius: 12px;
+        width: 520px;
+        max-width: calc(100% - 40px);
+      }
+      .modal-card label {
+        display: block;
+        color: var(--muted);
+        font-size: 13px;
+        margin-top: 10px;
+      }
+      .modal-card input,
+      .modal-card textarea,
+      .modal-card select {
+        width: 100%;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        background: transparent;
+        color: #fff;
+      }
+      .row {
+        display: flex;
+        gap: 8px;
+      }
+      .row > * {
+        flex: 1;
+      }
+
+      footer {
+        margin-top: 24px;
+        color: var(--muted);
+        font-size: 13px;
+        text-align: center;
+      }
+      .weather-controls {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap; /* Permite que los elementos bajen a otra línea si no caben */
+        justify-content: flex-start;
+      }
+      .weather-controls input,
+      .weather-controls button {
+        min-width: 0;
+        flex: 1 1 110px; /* Permite que se reduzcan y crezcan */
+        max-width: 140px;
+        box-sizing: border-box;
+      }
+      @media (max-width: 600px) {
+        .weather-controls input,
+        .weather-controls button {
+          flex: 1 1 100%;
+          max-width: 100%;
+        }
+      }
+      @media (max-width: 760px) {
+        .top {
+          grid-template-columns: 1fr;
+        }
+        .weather-card {
+          order: 3;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header>
+        <h1>Inicio personal</h1>
+      </header>
+
+      <div class="top">
+        <div class="search-card">
+          <form id="googleForm" class="search" onsubmit="return false;">
+            <input
+              id="googleQuery"
+              placeholder="Buscar en Google..."
+              autocomplete="off"
+            />
+            <button id="btnSearch">Buscar</button>
+          </form>
+          <div class="hint">
+            Pulsa Enter o el botón. El buscador abre los resultados en nueva
+            pestaña.
+          </div>
+        </div>
+
+        <div class="weather-card">
+          <div class="weather-top">
+            <div>
+              <div style="font-size: 13px; color: var(--muted)">Tiempo</div>
+              <div class="temp" id="wTemp">-- °C</div>
+              <div class="cond" id="wDesc">Sin datos</div>
+            </div>
+            <div style="text-align: right">
+              <div style="color: var(--muted); font-size: 12px">Ubicación</div>
+              <div id="wPlace" style="font-weight: 600; color: #fff">
+                No especificada
+              </div>
+            </div>
+          </div>
+
+          <div class="weather-controls">
+            <button id="btnGeo" class="btn">Usar geolocalización</button>
+            <input id="inpLat" placeholder="Lat" />
+            <input id="inpLon" placeholder="Lon" />
+            <button id="btnFetchWeather" class="btn">Actualizar</button>
+          </div>
+          <div style="font-size: 12px; color: var(--muted); margin-top: 6px">
+            Consejo: guarda coordenadas si quieres una localización fija.
+          </div>
+        </div>
+      </div>
+
+      <section class="games">
+        <div class="games-header">
+          <h2 style="color: #fff; margin: 0">Juegos finalizados</h2>
+          <div style="display: flex; gap: 8px; align-items: center">
+            <button id="btnAdd" class="small">Añadir juego</button>
+            <button id="btnExport" class="small">Exportar JSON</button>
+            <label
+              class="small"
+              style="
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                cursor: pointer;
+              "
+            >
+              <input
+                id="fileImport"
+                type="file"
+                accept="application/json"
+                style="display: none"
+              />Importar
+            </label>
+          </div>
+        </div>
+
+        <div class="games-list" id="gamesList"></div>
+      </section>
+
+      <footer>Hecho para uso personal — versión prototipo.</footer>
+    </div>
+
+    <!-- modal form -->
+    <div id="modal" class="modal" role="dialog" aria-hidden="true">
+      <div class="modal-card">
+        <h3 id="modalTitle">Añadir juego</h3>
+        <form id="gameForm">
+          <label>Título</label>
+          <input id="gTitle" required />
+          <div class="row">
+            <div>
+              <label>Plataforma</label>
+              <input id="gPlatform" />
+            </div>
+            <div>
+              <label>Fecha finalizado</label>
+              <input id="gDate" type="date" />
+            </div>
+          </div>
+          <div class="row">
+            <div>
+              <label>Puntuación (0-100)</label>
+              <input id="gScore" type="number" min="0" max="100" />
+            </div>
+            <div>
+              <label>Horas jugadas</label>
+              <input id="gHours" type="number" min="0" />
+            </div>
+          </div>
+          <label
+            >Cover URL (opcional) — Si lo dejas vacío buscaré automáticamente la
+            portada.</label
+          >
+          <input id="gCover" placeholder="https://...jpg" />
+          <div
+            style="
+              display: flex;
+              gap: 8px;
+              margin-top: 6px;
+              align-items: center;
+            "
+          >
+            <button type="button" id="btnFindCover" class="small">
+              Buscar portada ahora
+            </button>
+            <div id="coverStatus" style="font-size: 13px; color: var(--muted)">
+              Estado: sin buscar
+            </div>
+          </div>
+          <label>Notas</label>
+          <textarea id="gNotes" rows="3"></textarea>
+
+          <div
+            style="
+              display: flex;
+              gap: 8px;
+              justify-content: flex-end;
+              margin-top: 12px;
+            "
+          >
+            <button type="button" id="btnCancel" class="small">Cancelar</button>
+            <button type="submit" class="small">Guardar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- Firebase App (core) -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <!-- Firebase Realtime Database -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+    <script>
+      // --- CONFIG ---
+      // --- FIREBASE CONFIG ---
+      // Rellena con tus datos reales de Firebase Console
+      const firebaseConfig = {
+        apiKey: "TU_API_KEY",
+        authDomain: "juegos-completados-a3005.firebaseapp.com",
+        databaseURL: "https://juegos-completados-a3005-default-rtdb.europe-west1.firebasedatabase.app",
+        projectId: "juegos-completados-a3005",
+        storageBucket: "juegos-completados-a3005.appspot.com",
+        messagingSenderId: "TU_MESSAGING_SENDER_ID",
+        appId: "TU_APP_ID"
+      };
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.database();
+      // RAWG API: opcional. Si tienes una API KEY de rawg.io, pégala aquí para mayor fiabilidad.
+      // Si lo dejas vacío intentaremos la petición sin clave (puede funcionar o no dependiendo de RAWG en ese momento).
+      const RAWG_API_KEY = "f9f8f4e16c9740248b1c67e71720e801"; // clave proporcionada por el usuario (se ha eliminado un posible ':' inicial)
+
+      // --- Utilidad: debounce para evitar muchas peticiones mientras el usuario escribe ---
+      function debounce(fn, wait) {
+        let t;
+        return (...args) => {
+          clearTimeout(t);
+          t = setTimeout(() => fn(...args), wait);
+        };
+      }
+
+      // Nota: debajo, en DOMContentLoaded, se añade un listener "debounced" que intentará
+      // buscar automáticamente la portada cuando escribas el título y el campo Cover esté vacío.
+
+      // --- Constantes ---
+      // const STORAGE_KEY = "homepage_games_v1";
+      const WEATHER_KEY = "homepage_weather_loc";
+      let games = [];
+      let editingId = null;
+
+      // Cache en memoria para portadas buscadas en esta sesión
+      const coverCache = {};
+
+      // --- Helpers ---
+      const $ = (sel) => document.querySelector(sel);
+      const fmtDate = (d) =>
+        d ? new Date(d).toLocaleDateString("es-ES") : "-";
+
+      function escapeHtml(s) {
+        if (!s) return "";
+        return String(s).replace(/[&<>"']/g, function (m) {
+          return {
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;",
+          }[m];
+        });
+      }
+
+      // --- Weather mapping (Open-Meteo) ---
+      const weatherCodes = {
+        0: "Cielo despejado",
+        1: "Principalmente despejado",
+        2: "Parcialmente nublado",
+        3: "Nublado",
+        45: "Niebla",
+        48: "Neblina con depósitos de hielo",
+        51: "Llovizna ligera",
+        53: "Llovizna moderada",
+        55: "Llovizna densa",
+        61: "Lluvia ligera",
+        63: "Lluvia moderada",
+        65: "Lluvia intensa",
+        71: "Nieve ligera",
+        73: "Nieve moderada",
+        75: "Nieve intensa",
+        80: "Chubascos ligeros",
+        81: "Chubascos",
+        82: "Chubascos intensos",
+        95: "Tormenta",
+        96: "Tormenta con granizo ligero",
+        99: "Tormenta con granizo fuerte",
+      };
+
+      // --- Storage ---
+      // --- Firebase: cargar y guardar juegos ---
+      function loadGames() {
+        db.ref('games').once('value').then(snapshot => {
+          games = snapshot.val() || [];
+          renderGames();
+        }).catch(() => {
+          games = [];
+          renderGames();
+        });
+      }
+      function saveGames() {
+        db.ref('games').set(games);
+      }
+
+      // --- Render ---
+      function renderGames() {
+        const container = $("#gamesList");
+        container.innerHTML = "";
+        if (!games.length) {
+          container.innerHTML =
+            '<div style="color:var(--muted)">No hay juegos todavía. Añade el primero.</div>';
+          return;
+        }
+        const sorted = [...games].sort((a, b) =>
+          (b.date || "").localeCompare(a.date || "")
+        );
+        for (const g of sorted) {
+          const div = document.createElement("div");
+          div.className = "game";
+          div.innerHTML = `
+          <div style="display:flex;gap:10px;align-items:center">
+            <div style="width:56px;height:56px;border-radius:6px;overflow:hidden;background:#091224;flex-shrink:0">
+              ${
+                g.cover
+                  ? `<img src="${g.cover}" alt="cover" style="width:100%;height:100%;object-fit:cover">`
+                  : `<div style="display:flex;align-items:center;justify-content:center;height:56px;color:var(--muted);font-size:12px">No cover</div>`
+              }
+            </div>
+            <div style="flex:1">
+              <h3>${escapeHtml(g.title)}</h3>
+              <div class="meta">${escapeHtml(
+                g.platform || "Sin plataforma"
+              )} · ${fmtDate(g.date)} · <span class="score">${
+            g.score ?? "-"
+          }</span></div>
+              <div style="color:var(--muted);font-size:13px">${escapeHtml(
+                g.notes || ""
+              ).slice(0, 120)}</div>
+            </div>
+          </div>
+          <div style="margin-top:8px;display:flex;gap:8px">
+            <button class="small" onclick="openEdit('${g.id}')">Editar</button>
+            <button class="small" onclick="deleteGame('${
+              g.id
+            }')">Borrar</button>
+          </div>
+        `;
+          container.appendChild(div);
+        }
+      }
+
+      // --- CRUD ---
+      function addGame(payload) {
+        const entry = Object.assign({
+          id: String(Date.now()),
+          title: payload.title || "Sin título",
+          platform: payload.platform || "",
+          date: payload.date || "",
+          score: payload.score !== undefined ? Number(payload.score) : null,
+          hours: payload.hours || null,
+          cover: payload.cover || "",
+          notes: payload.notes || "",
+        });
+        games.push(entry);
+        saveGames();
+        renderGames();
+      }
+      function updateGame(id, payload) {
+        const idx = games.findIndex((x) => x.id === id);
+        if (idx === -1) return;
+        games[idx] = Object.assign({}, games[idx], payload);
+        saveGames();
+        renderGames();
+      }
+      function deleteGame(id) {
+        if (!confirm("Borrar juego?")) return;
+        games = games.filter((x) => x.id !== id);
+        saveGames();
+        renderGames();
+      }
+
+      function openEdit(id) {
+        const g = games.find((x) => x.id === id);
+        if (!g) return;
+        editingId = id;
+        $("#modalTitle").textContent = "Editar juego";
+        $("#gTitle").value = g.title;
+        $("#gPlatform").value = g.platform;
+        $("#gDate").value = g.date || "";
+        $("#gScore").value = g.score ?? "";
+        $("#gHours").value = g.hours ?? "";
+        $("#gCover").value = g.cover || "";
+        $("#gNotes").value = g.notes || "";
+        $("#coverStatus").textContent = g.cover
+          ? "Portada ya presente"
+          : "Sin portada";
+        $("#modal").classList.add("show");
+        $("#modal").setAttribute("aria-hidden", "false");
+      }
+
+      // --- Export / Import ---
+      function exportJSON() {
+        const blob = new Blob([JSON.stringify(games, null, 2)], {
+          type: "application/json",
+        });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "juegos_export.json";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      }
+      function importJSON(file) {
+        const r = new FileReader();
+        r.onload = (e) => {
+          try {
+            const parsed = JSON.parse(e.target.result);
+            if (!Array.isArray(parsed)) throw new Error("Formato inválido");
+            for (const p of parsed) {
+              if (!p.title) p.title = "Sin título";
+              if (!p.id) p.id = String(Date.now() + Math.random());
+            }
+            games = parsed;
+            saveGames();
+            renderGames();
+            alert("Importado correctamente");
+          } catch (err) {
+            alert("Error al importar: " + err.message);
+          }
+        };
+        r.readAsText(file);
+      }
+
+      // --- RAWG cover search ---
+      async function fetchCoverRAWG(title) {
+        const q = title && title.trim();
+        if (!q) return null;
+        if (coverCache[q]) return coverCache[q];
+
+        // Construimos URL. RAWG espera key=<API_KEY> si la tienes.
+        const base = "https://api.rawg.io/api/games";
+        const params = new URLSearchParams({ search: q, page_size: "1" });
+        if (RAWG_API_KEY) params.set("key", RAWG_API_KEY);
+        const url = `${base}?${params.toString()}`;
+
+        try {
+          const res = await fetch(url);
+          if (!res.ok) throw new Error("RAWG no responde: " + res.status);
+          const data = await res.json();
+          if (data && data.results && data.results.length) {
+            const r = data.results[0];
+            // RAWG suele devolver `background_image`. También intentamos screenshots si no hay.
+            const img =
+              r.background_image ||
+              (r.short_screenshots &&
+                r.short_screenshots[0] &&
+                r.short_screenshots[0].image) ||
+              null;
+            coverCache[q] = img; // puede ser null
+            return img;
+          }
+        } catch (err) {
+          console.warn("Error buscando portada RAWG:", err);
+        }
+        coverCache[q] = null;
+        return null;
+      }
+
+      // --- Weather ---
+      async function fetchWeather(lat, lon) {
+        try {
+          $("#wTemp").textContent = "...";
+          $("#wDesc").textContent = "Cargando...";
+          const url = `https://api.open-meteo.com/v1/forecast?latitude=${encodeURIComponent(
+            lat
+          )}&longitude=${encodeURIComponent(
+            lon
+          )}&current_weather=true&temperature_unit=celsius&timezone=auto`;
+          const res = await fetch(url);
+          if (!res.ok) throw new Error("Respuesta del servidor no válida");
+          const data = await res.json();
+          if (data && data.current_weather) {
+            const cw = data.current_weather;
+            $("#wTemp").textContent = Math.round(cw.temperature) + " °C";
+            $("#wDesc").textContent =
+              (weatherCodes[cw.weathercode] || "Condición #" + cw.weathercode) +
+              " · velocidad " +
+              cw.windspeed +
+              " m/s";
+            $("#wPlace").textContent = `Lat ${lat.toFixed(
+              4
+            )}, Lon ${lon.toFixed(4)}`;
+            localStorage.setItem(WEATHER_KEY, JSON.stringify({ lat, lon }));
+          } else {
+            $("#wDesc").textContent = "No hay datos actuales";
+          }
+        } catch (err) {
+          $("#wDesc").textContent = "Error al obtener tiempo";
+          console.error(err);
+        }
+      }
+
+      function tryLoadWeatherFromStorage() {
+        const raw = localStorage.getItem(WEATHER_KEY);
+        if (!raw) return false;
+        try {
+          const s = JSON.parse(raw);
+          if (s.lat && s.lon) {
+            $("#inpLat").value = s.lat;
+            $("#inpLon").value = s.lon;
+            fetchWeather(Number(s.lat), Number(s.lon));
+            return true;
+          }
+        } catch (e) {}
+        return false;
+      }
+
+      // --- Events and init ---
+      document.addEventListener("DOMContentLoaded", () => {
+        loadGames();
+        renderGames();
+
+        // search
+        $("#btnSearch").addEventListener("click", doSearch);
+        $("#googleQuery").addEventListener("keydown", (e) => {
+          if (e.key === "Enter") doSearch();
+        });
+
+        // modal
+        $("#btnAdd").addEventListener("click", () => {
+          editingId = null;
+          $("#modalTitle").textContent = "Añadir juego";
+          $("#gameForm").reset();
+          // Establecer la fecha actual por defecto
+          const today = new Date().toISOString().slice(0, 10);
+          $("#gDate").value = today;
+          $("#coverStatus").textContent = "sin buscar";
+          $("#modal").classList.add("show");
+          $("#modal").setAttribute("aria-hidden", "false");
+          $("#gTitle").focus();
+        });
+        $("#btnCancel").addEventListener("click", () => {
+          $("#modal").classList.remove("show");
+          $("#modal").setAttribute("aria-hidden", "true");
+        });
+
+        // Buscar portada ahora
+        $("#btnFindCover").addEventListener("click", async () => {
+          const title = $("#gTitle").value.trim();
+          if (!title) {
+            alert("Introduce primero el título");
+            return;
+          }
+          $("#coverStatus").textContent = "Buscando...";
+          try {
+            const img = await fetchCoverRAWG(title);
+            if (img) {
+              $("#gCover").value = img;
+              $("#coverStatus").textContent = "Portada encontrada";
+            } else {
+              $("#coverStatus").textContent =
+                "No encontrada (usa URL manualmente o guarda y luego edita)";
+            }
+          } catch (e) {
+            $("#coverStatus").textContent = "Error al buscar";
+            console.error(e);
+          }
+        });
+
+        // --- Auto-search de portada mientras escribes (debounced) ---
+        const tryAutoFindCover = debounce(async () => {
+          const title = $("#gTitle").value.trim();
+          if (!title) {
+            $("#coverStatus").textContent = "sin buscar";
+            return;
+          }
+          // si el usuario ya ha puesto una URL manual, respetarla
+          if ($("#gCover").value.trim()) {
+            $("#coverStatus").textContent = "URL manual presente";
+            return;
+          }
+          $("#coverStatus").textContent = "Buscando...";
+          try {
+            const img = await fetchCoverRAWG(title);
+            if (img) {
+              $("#gCover").value = img;
+              $("#coverStatus").textContent = "Portada encontrada (auto)";
+            } else {
+              $("#coverStatus").textContent = "No encontrada automáticamente";
+            }
+          } catch (err) {
+            $("#coverStatus").textContent = "Error al buscar (auto)";
+            console.warn(err);
+          }
+        }, 900);
+
+        // activamos el auto-search solo cuando el modal está abierto
+        $("#gTitle").addEventListener("input", () => {
+          if (document.getElementById("modal").classList.contains("show"))
+            tryAutoFindCover();
+        });
+
+        // form submit: si no hay cover, intentamos buscar automáticamente antes de guardar
+        $("#gameForm").addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const payload = {
+            title: $("#gTitle").value.trim(),
+            platform: $("#gPlatform").value.trim(),
+            date: $("#gDate").value || "",
+            score: $("#gScore").value ? Number($("#gScore").value) : null,
+            hours: $("#gHours").value ? Number($("#gHours").value) : null,
+            cover: $("#gCover").value.trim(),
+            notes: $("#gNotes").value.trim(),
+          };
+
+          // Si no hay portada y hay título, intentar buscar antes de guardar
+          if (!payload.cover && payload.title) {
+            $("#coverStatus").textContent = "Buscando portada...";
+            try {
+              const img = await fetchCoverRAWG(payload.title);
+              if (img) {
+                payload.cover = img;
+                $("#coverStatus").textContent = "Portada encontrada y asignada";
+              } else {
+                $("#coverStatus").textContent =
+                  "No se encontró portada automáticamente";
+              }
+            } catch (err) {
+              console.warn(err);
+              $("#coverStatus").textContent = "Error buscando portada";
+            }
+          }
+
+          if (editingId) {
+            updateGame(editingId, payload);
+            editingId = null;
+          } else {
+            addGame(payload);
+          }
+          $("#modal").classList.remove("show");
+          $("#modal").setAttribute("aria-hidden", "true");
+        });
+
+        // export/import
+        $("#btnExport").addEventListener("click", exportJSON);
+        $("#fileImport").addEventListener("change", (e) => {
+          const f = e.target.files[0];
+          if (f) importJSON(f);
+          e.target.value = "";
+        });
+
+        // weather
+        $("#btnGeo").addEventListener("click", () => {
+          if (!navigator.geolocation) {
+            alert("Geolocalización no disponible en este navegador");
+            return;
+          }
+          navigator.geolocation.getCurrentPosition(
+            (pos) => {
+              const lat = pos.coords.latitude;
+              const lon = pos.coords.longitude;
+              $("#inpLat").value = lat;
+              $("#inpLon").value = lon;
+              fetchWeather(lat, lon);
+            },
+            (err) => {
+              alert("Error geolocalización: " + err.message);
+            }
+          );
+        });
+        $("#btnFetchWeather").addEventListener("click", () => {
+          const lat = parseFloat($("#inpLat").value);
+          const lon = parseFloat($("#inpLon").value);
+          if (Number.isFinite(lat) && Number.isFinite(lon)) {
+            fetchWeather(lat, lon);
+          } else {
+            alert("Introduce coordenadas válidas");
+          }
+        });
+
+        // try load saved loc
+        tryLoadWeatherFromStorage();
+
+        // focus shortcuts
+        document.addEventListener("keydown", (e) => {
+          if (
+            e.key === "/" &&
+            document.activeElement.tagName !== "INPUT" &&
+            document.activeElement.tagName !== "TEXTAREA"
+          ) {
+            e.preventDefault();
+            $("#googleQuery").focus();
+          }
+        });
+      });
+
+      function doSearch() {
+        const q = $("#googleQuery").value.trim();
+        if (!q) return;
+        const url = "https://www.google.com/search?q=" + encodeURIComponent(q);
+        window.open(url, "_blank");
+      }
+
+      // Exponer funciones para botones que usan onclick="..."
+      window.openEdit = openEdit;
+      window.deleteGame = deleteGame;
+    </script>
+  </body>
+</html>
