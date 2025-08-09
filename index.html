@@ -31,6 +31,7 @@
       cursor: pointer;
       transition: background 0.18s, border 0.18s, transform 0.15s;
       outline: none;
+      position: relative;
     }
     .sidebar-link-btn:hover {
       background: var(--accent);
@@ -45,6 +46,39 @@
       object-fit: cover;
       display: block;
     }
+    .sidebar-link-btn .fav-remove {
+      display: none;
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      background: #181e2a;
+      border: 2px solid #ef4444;
+      color: #ef4444;
+      font-size: 15px;
+      font-weight: bold;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 2;
+      box-shadow: 0 2px 8px 0 rgba(2,6,23,0.13);
+      transition: background 0.15s, border 0.15s, color 0.15s, opacity 0.15s;
+      opacity: 0.92;
+      outline: none;
+      padding: 0;
+      border-style: solid;
+    }
+    .sidebar-link-btn:hover .fav-remove,
+    .sidebar-link-btn:focus-within .fav-remove {
+      display: flex;
+    }
+    .fav-remove:active {
+      background: #ef4444;
+      color: #fff;
+      border-color: #fff;
+    }
     .sidebar-link-btn.add {
       background: #1e293b;
       color: var(--accent);
@@ -55,6 +89,7 @@
       .sidebar-links { left: 6px; gap: 10px; }
       .sidebar-link-btn { width: 38px; height: 38px; font-size: 18px; }
       .sidebar-link-btn img { width: 18px; height: 18px; }
+      .sidebar-link-btn .fav-remove { width: 16px; height: 16px; font-size: 11px; top: -6px; right: -6px; }
     }
       :root {
         --bg: #0f1724;
@@ -831,40 +866,71 @@
     // Links favoritos sidebar
     // =====================
     const FAV_KEY = "homepage_favlinks";
-    function getFavLinks() {
-      try {
-        return JSON.parse(localStorage.getItem(FAV_KEY)) || [];
-      } catch { return []; }
+
+    // Links favoritos sincronizados con Firebase
+    function getFavLinks(cb) {
+      db.ref('favlinks').once('value').then(snapshot => {
+        const arr = snapshot.val() || [];
+        localStorage.setItem(FAV_KEY, JSON.stringify(arr));
+        cb(arr);
+      }).catch(() => {
+        // Si falla, usar local
+        try {
+          cb(JSON.parse(localStorage.getItem(FAV_KEY)) || []);
+        } catch { cb([]); }
+      });
     }
     function saveFavLinks(arr) {
       localStorage.setItem(FAV_KEY, JSON.stringify(arr));
+      db.ref('favlinks').set(arr);
     }
     function renderFavLinks() {
-      const nav = document.getElementById("sidebarLinks");
-      nav.innerHTML = "";
-      const favs = getFavLinks();
-      favs.forEach((fav, i) => {
-        const btn = document.createElement("button");
-        btn.className = "sidebar-link-btn";
-        btn.title = fav.url;
-        btn.onclick = () => window.open(fav.url, "_blank");
-        if (fav.icon && fav.icon.startsWith("http")) {
-          const img = document.createElement("img");
-          img.src = fav.icon;
-          img.alt = "icono";
-          btn.appendChild(img);
-        } else {
-          btn.textContent = fav.icon || "🔗";
-        }
-        nav.appendChild(btn);
+      getFavLinks(favs => {
+        const nav = document.getElementById("sidebarLinks");
+        nav.innerHTML = "";
+        favs.forEach((fav, i) => {
+          const btn = document.createElement("button");
+          btn.className = "sidebar-link-btn";
+          btn.title = fav.url;
+          btn.type = "button";
+          btn.onclick = (e) => {
+            // Si se hace click en la X, no abrir link
+            if (e.target.classList.contains('fav-remove')) return;
+            window.open(fav.url, "_blank");
+          };
+          if (fav.icon && fav.icon.startsWith("http")) {
+            const img = document.createElement("img");
+            img.src = fav.icon;
+            img.alt = "icono";
+            btn.appendChild(img);
+          } else {
+            btn.textContent = fav.icon || "🔗";
+          }
+          // Botón eliminar
+          const delBtn = document.createElement("button");
+          delBtn.className = "fav-remove";
+          delBtn.type = "button";
+          delBtn.title = "Eliminar link";
+          delBtn.innerHTML = "&#10005;"; // X
+          delBtn.onclick = (ev) => {
+            ev.stopPropagation();
+            getFavLinks(favs2 => {
+              favs2.splice(i, 1);
+              saveFavLinks(favs2);
+              renderFavLinks();
+            });
+          };
+          btn.appendChild(delBtn);
+          nav.appendChild(btn);
+        });
+        // Botón añadir
+        const addBtn = document.createElement("button");
+        addBtn.className = "sidebar-link-btn add";
+        addBtn.title = "Añadir link favorito";
+        addBtn.innerHTML = "+";
+        addBtn.onclick = () => openFavModal();
+        nav.appendChild(addBtn);
       });
-      // Botón añadir
-      const addBtn = document.createElement("button");
-      addBtn.className = "sidebar-link-btn add";
-      addBtn.title = "Añadir link favorito";
-      addBtn.innerHTML = "+";
-      addBtn.onclick = () => openFavModal();
-      nav.appendChild(addBtn);
     }
     function openFavModal() {
       document.getElementById("favModal").classList.add("show");
@@ -883,11 +949,12 @@
         const url = document.getElementById("favUrl").value.trim();
         let icon = document.getElementById("favIcon").value.trim();
         if (!icon) icon = "🔗";
-        const favs = getFavLinks();
-        favs.push({ url, icon });
-        saveFavLinks(favs);
-        renderFavLinks();
-        closeFavModal();
+        getFavLinks(favs => {
+          favs.push({ url, icon });
+          saveFavLinks(favs);
+          renderFavLinks();
+          closeFavModal();
+        });
       });
       document.getElementById("favCancel").addEventListener("click", closeFavModal);
       document.getElementById("favModal").addEventListener("click", (e) => {
