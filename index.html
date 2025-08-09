@@ -816,7 +816,15 @@
       // Helpers
       // =====================
       const $ = (sel) => document.querySelector(sel);
-      const fmtDate = (d) => d ? new Date(d).toLocaleDateString("es-ES") : "-";
+      const fmtDate = (d) => {
+        if (!d) return "-";
+        const date = new Date(d);
+        if (isNaN(date)) return "-";
+        const day = String(date.getDate()).padStart(2, '0');
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const year = String(date.getFullYear()).slice(-2);
+        return `${day}/${month}/${year}`;
+      };
       function escapeHtml(s) {
         if (!s) return "";
         return String(s).replace(/[&<>"]|'/g, (m) => ({
