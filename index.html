@@ -445,6 +445,39 @@
         align-items: center;
         gap: 10px;
       }
+
+      .power-card {
+        background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+        padding: 14px 16px 12px 16px;
+        border-radius: 12px;
+        box-shadow: 0 6px 18px rgba(2, 6, 23, 0.10);
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+        margin-bottom: 0px;
+      }
+      .power-header {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 2px;
+      }
+      .power-card table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+      .power-card th, .power-card td {
+        padding: 2px 4px;
+        text-align: left;
+      }
+      .power-card tr:nth-child(even) td {
+        background: rgba(255,255,255,0.02);
+      }
+      .power-card tr.now td {
+        background: var(--accent);
+        color: #041124;
+        font-weight: 600;
+      }
     </style>
   </head>
   <body>
@@ -469,29 +502,67 @@
           </div>
         </div>
 
-        <div class="weather-card">
-          <div class="weather-top">
-            <div>
-              <div style="font-size: 13px; color: var(--muted)">Tiempo</div>
-              <div class="temp" id="wTemp">-- °C</div>
-              <div class="cond" id="wDesc">Sin datos</div>
+        <div style="display: flex; flex-direction: column; gap: 14px;">
+          <div class="power-card">
+            <div class="power-header">
+              <span style="font-size:18px;">💡</span>
+              <span style="font-size:15px;font-weight:600;">Precio luz hoy</span>
+              <span id="powerDate" style="color:var(--muted);font-size:12px;margin-left:auto;"></span>
             </div>
-            <div style="text-align: right">
-              <div style="color: var(--muted); font-size: 12px">Ubicación</div>
-              <div id="wPlace" style="font-weight: 600; color: #fff">
-                No especificada
+            <div id="powerStatus" style="color:var(--muted);font-size:13px;margin:6px 0 0 0;">Cargando...</div>
+            <div id="powerMain" style="display:none;">
+              <div style="display:flex;gap:12px;align-items:center;margin:8px 0 10px 0;">
+                <div style="flex:1;">
+                  <div style="font-size:13px;color:var(--muted);">Ahora</div>
+                  <div id="powerNow" style="font-size:22px;font-weight:700;color:var(--accent);">--</div>
+                </div>
+                <div style="flex:1;">
+                  <div style="font-size:13px;color:var(--muted);">Mín</div>
+                  <div id="powerMin" style="font-size:17px;font-weight:600;color:#22c55e;">--</div>
+                </div>
+                <div style="flex:1;">
+                  <div style="font-size:13px;color:var(--muted);">Máx</div>
+                  <div id="powerMax" style="font-size:17px;font-weight:600;color:#ef4444;">--</div>
+                </div>
+              </div>
+              <div style="margin-top:4px;">
+                <table id="powerTable" style="width:100%;border-collapse:collapse;font-size:13px;">
+                  <thead>
+                    <tr style="color:var(--muted);text-align:left;">
+                      <th style="padding:2px 4px;">Hora</th>
+                      <th style="padding:2px 4px;">Precio</th>
+                    </tr>
+                  </thead>
+                  <tbody></tbody>
+                </table>
               </div>
             </div>
           </div>
 
-          <div class="weather-controls">
-            <button id="btnGeo" class="btn">Usar geolocalización</button>
-            <input id="inpLat" placeholder="Lat" />
-            <input id="inpLon" placeholder="Lon" />
-            <button id="btnFetchWeather" class="btn">Actualizar</button>
-          </div>
-          <div style="font-size: 12px; color: var(--muted); margin-top: 6px">
-            Consejo: guarda coordenadas si quieres una localización fija.
+          <div class="weather-card">
+            <div class="weather-top">
+              <div>
+                <div style="font-size: 13px; color: var(--muted)">Tiempo</div>
+                <div class="temp" id="wTemp">-- °C</div>
+                <div class="cond" id="wDesc">Sin datos</div>
+              </div>
+              <div style="text-align: right">
+                <div style="color: var(--muted); font-size: 12px">Ubicación</div>
+                <div id="wPlace" style="font-weight: 600; color: #fff">
+                  No especificada
+                </div>
+              </div>
+            </div>
+
+            <div class="weather-controls">
+              <button id="btnGeo" class="btn">Usar geolocalización</button>
+              <input id="inpLat" placeholder="Lat" />
+              <input id="inpLon" placeholder="Lon" />
+              <button id="btnFetchWeather" class="btn">Actualizar</button>
+            </div>
+            <div style="font-size: 12px; color: var(--muted); margin-top: 6px">
+              Consejo: guarda coordenadas si quieres una localización fija.
+            </div>
           </div>
         </div>
       </div>
@@ -968,10 +1039,76 @@
         }
       }
 
+      // --- Precios luz ---
+      async function fetchPowerPrices() {
+        const status = document.getElementById('powerStatus');
+        const main = document.getElementById('powerMain');
+        const dateSpan = document.getElementById('powerDate');
+        const nowSpan = document.getElementById('powerNow');
+        const minSpan = document.getElementById('powerMin');
+        const maxSpan = document.getElementById('powerMax');
+        const table = document.getElementById('powerTable').querySelector('tbody');
+        status.textContent = 'Cargando...';
+        main.style.display = 'none';
+        try {
+          // Usar proxy CORS alternativo para evitar bloqueos
+          const apiUrl = 'https://tarifaluzhora.es/api/v1/prices/all?zone=pcb';
+          const proxyUrl = 'https://corsproxy.io/?' + encodeURIComponent(apiUrl);
+          const res = await fetch(proxyUrl);
+          if (!res.ok) throw new Error('No se pudo obtener precios');
+          const data = await res.json();
+          // data es un objeto con fechas como claves
+          const today = new Date();
+          const yyyy = today.getFullYear();
+          const mm = String(today.getMonth()+1).padStart(2,'0');
+          const dd = String(today.getDate()).padStart(2,'0');
+          const key = `${yyyy}-${mm}-${dd}`;
+          const precios = data[key];
+          if (!precios) throw new Error('No hay datos para hoy');
+          dateSpan.textContent = key;
+          // Buscar min, max, actual
+          let min = Infinity, max = -Infinity, minH = '', maxH = '', nowVal = null, nowH = '';
+          const rows = [];
+          const hourNow = today.getHours();
+          for (const h in precios) {
+            const val = precios[h];
+            if (val < min) { min = val; minH = h; }
+            if (val > max) { max = val; maxH = h; }
+            if (Number(h) === hourNow) { nowVal = val; nowH = h; }
+            rows.push({h, val});
+          }
+          nowSpan.textContent = nowVal !== null ? nowVal.toFixed(3) + ' €/kWh' : '--';
+          minSpan.textContent = min !== Infinity ? min.toFixed(3) + ' ('+minH+'h)' : '--';
+          maxSpan.textContent = max !== -Infinity ? max.toFixed(3) + ' ('+maxH+'h)' : '--';
+          // Mostrar próximas 6 horas (desde la actual)
+          table.innerHTML = '';
+          for (let i=0; i<24; ++i) {
+            const idx = (hourNow + i) % 24;
+            const h = String(idx).padStart(2,'0');
+            const found = rows.find(r => r.h === h);
+            if (!found) continue;
+            const tr = document.createElement('tr');
+            if (i === 0) tr.classList.add('now');
+            tr.innerHTML = `<td>${h}:00</td><td>${found.val.toFixed(3)} €/kWh</td>`;
+            table.appendChild(tr);
+            if (i === 5) break;
+          }
+          status.textContent = '';
+          main.style.display = '';
+        } catch (err) {
+          status.textContent = 'No se pudo cargar el precio de la luz.';
+          main.style.display = 'none';
+        }
+      }
+
       // --- Events and init ---
       document.addEventListener("DOMContentLoaded", () => {
         loadGames();
         renderGames();
+
+        // Precios luz
+        fetchPowerPrices();
+        setInterval(fetchPowerPrices, 60*60*1000); // recarga cada hora
 
         // search
         $("#btnSearch").addEventListener("click", doSearch);
@@ -1135,6 +1272,9 @@
           }
         });
 
+        // precios luz
+        fetchPowerPrices();
+
         // try load saved loc
         tryLoadWeatherFromStorage();
         // mostrar por defecto el tiempo de Madrid Legazpi si no hay localización guardada
@@ -1195,7 +1335,7 @@
       const scoreSlider = $("#gScore");
       const scoreValue = $("#gScoreValue");
       const scoreBubble = $("#gScoreBubble");
-      const scoreWrap = scoreSlider.closest('.score-slider-wrap');
+      const scoreWrap = scoreSlider.closest('.score-slider_wrap');
       scoreSlider.addEventListener("input", (e) => {
         updateScoreUI(e.target.value);
       });
