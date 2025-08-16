@@ -472,8 +472,8 @@
         margin-top: 10px;
         margin-bottom: 4px;
       }
-
-      .modal-card textarea {
+      
+      .modal-card textarea{
         width: 100%;
         padding: 10px;
         border-radius: 8px;
@@ -900,13 +900,7 @@
             </div>
             <div
               id="coverThumbGallery"
-              style="
-                display: flex;
-                gap: 8px;
-                margin: 10px 0 8px 0;
-                justify-content: center;
-                margin-bottom: 1rem;
-              "
+              style="display: flex; gap: 8px; margin: 10px 0 8px 0; justify-content: center; margin-bottom: 1rem"
             ></div>
             <div
               id="coverPreviewWrap"
@@ -996,50 +990,6 @@
       </div>
     </div>
 
-    <!-- Modal de confirmación para eliminar link favorito -->
-    <div id="favConfirmModal" class="modal" role="dialog" aria-hidden="true">
-      <div
-        class="modal-card"
-        style="max-width: 340px; padding: 28px 24px; text-align: center"
-      >
-        <div
-          style="
-            font-size: 18px;
-            font-weight: 600;
-            color: #fff;
-            margin-bottom: 10px;
-          "
-        >
-          ¿Eliminar link?
-        </div>
-        <div
-          id="favConfirmUrl"
-          style="
-            color: var(--muted);
-            font-size: 15px;
-            margin-bottom: 18px;
-            word-break: break-all;
-          "
-        ></div>
-        <div style="display: flex; gap: 12px; justify-content: center">
-          <button
-            id="btnConfirmFavDelete"
-            class="small"
-            style="background: #ef4444; color: #fff; min-width: 80px"
-          >
-            Eliminar
-          </button>
-          <button
-            id="btnCancelFavDelete"
-            class="small"
-            style="background: #222c3a; color: #fff; min-width: 80px"
-          >
-            Cancelar
-          </button>
-        </div>
-      </div>
-    </div>
-
     <!-- Firebase App (core) -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
     <!-- Firebase Realtime Database -->
@@ -1099,14 +1049,17 @@
             delBtn.className = "fav-remove";
             delBtn.type = "button";
             delBtn.title = "Eliminar link";
-            delBtn.innerHTML = ""; // mantenemos visual igual que antes
+            delBtn.innerHTML = ""; // X = &#10005;
             delBtn.onclick = (ev) => {
               ev.stopPropagation();
-              // abrir modal de confirmación pasando índice y datos del link
-              openFavConfirm(i, fav);
+              getFavLinks((favs2) => {
+                favs2.splice(i, 1);
+                saveFavLinks(favs2);
+                renderFavLinks();
+              });
             };
-            btn.appendChild(delBtn); // pone la X dentro del botón principal
-            nav.appendChild(btn); // añade el botón completo al nav (sidebar)
+            btn.appendChild(delBtn);
+            nav.appendChild(btn);
           });
           // Botón añadir
           const addBtn = document.createElement("button");
@@ -1200,10 +1153,6 @@
         googleForm: "#googleForm",
         googleQuery: "#googleQuery",
         btnSearch: "#btnSearch",
-        favConfirmModal: "#favConfirmModal",
-        favConfirmUrl: "#favConfirmUrl",
-        btnCancelFavDelete: "#btnCancelFavDelete",
-        btnConfirmFavDelete: "#btnConfirmFavDelete",
       };
 
       // =====================
@@ -1246,7 +1195,6 @@
       let games = [];
       let editingId = null;
       let pendingDeleteId = null;
-      let pendingFavIndex = null;
       const coverCache = {};
 
       // =====================
@@ -1409,26 +1357,6 @@
         $(SELECTORS.confirmModal).setAttribute("aria-hidden", "true");
         pendingDeleteId = null;
       }
-      function openFavConfirm(index, fav) {
-        pendingFavIndex = index;
-        const el = document.querySelector(SELECTORS.favConfirmUrl);
-        el.textContent = fav && fav.url ? fav.url : "(sin url)";
-        document.querySelector(SELECTORS.favConfirmModal).classList.add("show");
-        document
-          .querySelector(SELECTORS.favConfirmModal)
-          .setAttribute("aria-hidden", "false");
-      }
-
-      function closeFavConfirm() {
-        pendingFavIndex = null;
-        document
-          .querySelector(SELECTORS.favConfirmModal)
-          .classList.remove("show");
-        document
-          .querySelector(SELECTORS.favConfirmModal)
-          .setAttribute("aria-hidden", "true");
-      }
-
       function openEdit(id) {
         const g = games.find((x) => x.id === id);
         if (!g) return;
@@ -1852,29 +1780,6 @@
             saveGames();
             renderGames();
             closeConfirmModal();
-          }
-        });
-
-        // Confirmación de borrado - links favoritos
-        $(SELECTORS.btnCancelFavDelete).addEventListener(
-          "click",
-          closeFavConfirm
-        );
-        $(SELECTORS.favConfirmModal).addEventListener("click", (e) => {
-          if (e.target === $(SELECTORS.favConfirmModal)) closeFavConfirm();
-        });
-        $(SELECTORS.btnConfirmFavDelete).addEventListener("click", () => {
-          if (pendingFavIndex !== null) {
-            getFavLinks((favs2) => {
-              if (pendingFavIndex >= 0 && pendingFavIndex < favs2.length) {
-                favs2.splice(pendingFavIndex, 1);
-                saveFavLinks(favs2);
-                renderFavLinks();
-              }
-              closeFavConfirm();
-            });
-          } else {
-            closeFavConfirm();
           }
         });
 
