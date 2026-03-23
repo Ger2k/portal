@@ -1,25 +1,26 @@
 // =====================
 // Weather
 // =====================
+const DEFAULT_WEATHER_LOCATION = { lat: 40.3989, lon: -3.6944 };
+
 function formatCoords(lat, lon) {
   return `Lat ${Number(lat).toFixed(4)}, Lon ${Number(lon).toFixed(4)}`;
 }
 
 async function resolvePlaceName(lat, lon) {
-  const url = `https://geocoding-api.open-meteo.com/v1/reverse?latitude=${encodeURIComponent(
+  const url = `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${encodeURIComponent(
     lat
-  )}&longitude=${encodeURIComponent(lon)}&language=es&count=1`;
+  )}&longitude=${encodeURIComponent(lon)}&localityLanguage=es`;
 
   const res = await fetch(url);
   if (!res.ok) throw new Error("No se pudo resolver la ubicacion");
 
   const data = await res.json();
-  const first = data && Array.isArray(data.results) ? data.results[0] : null;
-  if (!first) return "";
-
-  const city = first.city || first.name || "";
-  const admin = first.admin1 || "";
-  const country = first.country || "";
+  const city =
+    (data && (data.city || data.locality || data.principalSubdivision)) || "";
+  const admin = (data && data.principalSubdivision) || "";
+  const country =
+    (data && (data.countryName || data.countryCode || data.country)) || "";
 
   if (city && country) return `${city}, ${country}`;
   if (city && admin) return `${city}, ${admin}`;
@@ -89,15 +90,17 @@ function tryLoadWeatherFromStorage() {
   if (!raw) return false;
   try {
     const s = JSON.parse(raw);
-    if (s.lat && s.lon) {
-      $(SELECTORS.inpLat).value = s.lat;
-      $(SELECTORS.inpLon).value = s.lon;
+    const storedLat = Number(s.lat);
+    const storedLon = Number(s.lon);
+    if (Number.isFinite(storedLat) && Number.isFinite(storedLon)) {
+      $(SELECTORS.inpLat).value = storedLat;
+      $(SELECTORS.inpLon).value = storedLon;
 
       if (s.place) {
         $(SELECTORS.wPlace).textContent = s.place;
       }
 
-      fetchWeather(Number(s.lat), Number(s.lon));
+      fetchWeather(storedLat, storedLon);
       return true;
     }
   } catch (e) {
@@ -106,11 +109,49 @@ function tryLoadWeatherFromStorage() {
   return false;
 }
 
-function showDefaultWeatherIfNeeded() {
+function tryLoadWeatherFromGeolocation() {
+  return new Promise((resolve) => {
+    if (!navigator.geolocation) {
+      resolve(false);
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const lat = Number(pos.coords.latitude);
+        const lon = Number(pos.coords.longitude);
+        if (!Number.isFinite(lat) || !Number.isFinite(lon)) {
+          resolve(false);
+          return;
+        }
+
+        $(SELECTORS.inpLat).value = lat;
+        $(SELECTORS.inpLon).value = lon;
+        fetchWeather(lat, lon);
+        resolve(true);
+      },
+      (err) => {
+        console.warn("No se pudo obtener geolocalizacion inicial", err);
+        resolve(false);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 9000,
+        maximumAge: 300000,
+      }
+    );
+  });
+}
+
+async function showDefaultWeatherIfNeeded() {
   const loaded = tryLoadWeatherFromStorage();
-  if (!loaded) {
-    const lat = 40.3989;
-    const lon = -3.6944;
+  if (loaded) return;
+
+  $(SELECTORS.wPlace).textContent = "Detectando ubicacion...";
+  const geoLoaded = await tryLoadWeatherFromGeolocation();
+  if (!geoLoaded) {
+    const lat = DEFAULT_WEATHER_LOCATION.lat;
+    const lon = DEFAULT_WEATHER_LOCATION.lon;
     $(SELECTORS.inpLat).value = lat;
     $(SELECTORS.inpLon).value = lon;
     fetchWeather(lat, lon);
