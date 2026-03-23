@@ -1049,6 +1049,7 @@
       // Links favoritos sidebar
       // =====================
       const FAV_KEY = "homepage_favlinks";
+      const GAMES_KEY = "homepage_games";
 
       // Links favoritos sincronizados con Firebase
       function getFavLinks(cb) {
@@ -1058,10 +1059,12 @@
             const arr = snapshot.val() || [];
             localStorage.setItem(FAV_KEY, JSON.stringify(arr));
             cb(arr);
+            console.log("Links favoritos cargados desde Firebase:");
           })
           .catch(() => {
             // Si falla, usar local
             try {
+              console.log("Error al cargar links favoritos de Firebase, usando localStorage");
               cb(JSON.parse(localStorage.getItem(FAV_KEY)) || []);
             } catch {
               cb([]);
@@ -1084,7 +1087,7 @@
             btn.onclick = (e) => {
               // Si se hace click en la X, no abrir link
               if (e.target.classList.contains("fav-remove")) return;
-              window.open(fav.url, "_blank");
+              safeOpenExternal(fav.url);
             };
             if (fav.icon && fav.icon.startsWith("http")) {
               const img = document.createElement("img");
@@ -1105,8 +1108,8 @@
               // abrir modal de confirmación pasando índice y datos del link
               openFavConfirm(i, fav);
             };
-            btn.appendChild(delBtn); // pone la X dentro del botón principal
-            nav.appendChild(btn); // añade el botón completo al nav (sidebar)
+            btn.appendChild(delBtn);
+            nav.appendChild(btn);
           });
           // Botón añadir
           const addBtn = document.createElement("button");
@@ -1129,7 +1132,7 @@
         document.getElementById("favModal").classList.remove("show");
         document.getElementById("favModal").setAttribute("aria-hidden", "true");
       }
-      document.addEventListener("DOMContentLoaded", () => {
+      function initFavLinksUI() {
         renderFavLinks();
         document.getElementById("favForm").addEventListener("submit", (e) => {
           e.preventDefault();
@@ -1149,7 +1152,7 @@
         document.getElementById("favModal").addEventListener("click", (e) => {
           if (e.target === document.getElementById("favModal")) closeFavModal();
         });
-      });
+      }
 
       // =====================
       // Configuración y Constantes
@@ -1239,6 +1242,29 @@
           t = setTimeout(() => fn(...args), wait);
         };
       }
+      function safeOpenExternal(url) {
+        try {
+          const parsed = new URL(url, window.location.href);
+          if (!/^https?:$/.test(parsed.protocol)) return;
+          window.open(parsed.href, "_blank", "noopener,noreferrer");
+        } catch (err) {
+          console.warn("URL inválida", err);
+        }
+      }
+      function normalizeGamesData(raw) {
+        if (Array.isArray(raw)) return raw.filter(Boolean);
+        if (raw && typeof raw === "object") return Object.values(raw).filter(Boolean);
+        return [];
+      }
+      function sanitizeImageUrl(url) {
+        if (!url) return "";
+        try {
+          const parsed = new URL(url, window.location.href);
+          return /^https?:$/.test(parsed.protocol) ? parsed.href : "";
+        } catch {
+          return "";
+        }
+      }
 
       // =====================
       // Estado global
@@ -1283,15 +1309,22 @@
         db.ref("games")
           .once("value")
           .then((snapshot) => {
-            games = snapshot.val() || [];
+            games = normalizeGamesData(snapshot.val());
+            localStorage.setItem(GAMES_KEY, JSON.stringify(games));
             renderGames();
           })
-          .catch(() => {
-            games = [];
+          .catch((err) => {
+            console.error("No se pudo cargar juegos de Firebase", err);
+            try {
+              games = normalizeGamesData(JSON.parse(localStorage.getItem(GAMES_KEY)));
+            } catch {
+              games = [];
+            }
             renderGames();
           });
       }
       function saveGames() {
+        localStorage.setItem(GAMES_KEY, JSON.stringify(games));
         db.ref("games").set(games);
       }
 
@@ -1315,6 +1348,7 @@
         for (const g of sorted) {
           const div = document.createElement("div");
           div.className = "game";
+          const safeCover = sanitizeImageUrl(g.cover);
           // Color score: de rojo (#ef4444) a verde (#22c55e)
           let scoreColor = "#9aa4b2";
           if (typeof g.score === "number") {
@@ -1333,8 +1367,8 @@
           div.innerHTML = `
             <div class="cover">
               ${
-                g.cover
-                  ? `<img src="${g.cover}" alt="cover">`
+                safeCover
+                  ? `<img src="${safeCover}" alt="cover">`
                   : `<div class="no-cover">No cover</div>`
               }
             </div>
@@ -1353,12 +1387,8 @@
               )}</div>
             </div>
             <div class="actions">
-              <button class="small" onclick="openEdit('${
-                g.id
-              }')">Editar</button>
-              <button class="small" onclick="deleteGame('${
-                g.id
-              }')">Borrar</button>
+              <button class="small js-edit-game" data-game-id="${escapeHtml(g.id)}">Editar</button>
+              <button class="small js-delete-game" data-game-id="${escapeHtml(g.id)}">Borrar</button>
             </div>
           `;
           if (g.id === newGameId) {
@@ -1429,6 +1459,18 @@
           .setAttribute("aria-hidden", "true");
       }
 
+      function updateCoverPreview() {
+        const url = sanitizeImageUrl($(SELECTORS.gCover).value.trim());
+        const previewWrap = document.getElementById("coverPreviewWrap");
+        previewWrap.innerHTML = "";
+        if (url) {
+          const img = document.createElement("img");
+          img.src = url;
+          img.alt = "Previsualización de portada";
+          previewWrap.appendChild(img);
+        }
+      }
+
       function openEdit(id) {
         const g = games.find((x) => x.id === id);
         if (!g) return;
@@ -1445,6 +1487,8 @@
         $(SELECTORS.coverStatus).textContent = g.cover
           ? "Portada ya presente"
           : "Sin portada";
+        document.getElementById("coverThumbGallery").innerHTML = "";
+        updateCoverPreview();
         $(SELECTORS.modal).classList.add("show");
         $(SELECTORS.modal).setAttribute("aria-hidden", "false");
       }
@@ -1613,18 +1657,47 @@
       // =====================
       // Inicialización y eventos
       // =====================
-      document.addEventListener("DOMContentLoaded", () => {
-        loadGames();
-        renderGames();
-        renderFavLinks();
+      function doSearch() {
+        const q = $(SELECTORS.googleQuery).value.trim();
+        if (!q) return;
+        const url = "https://www.google.com/search?q=" + encodeURIComponent(q);
+        safeOpenExternal(url);
+      }
 
-        // Buscador Google
+      function initSearchUI() {
         $(SELECTORS.btnSearch).addEventListener("click", doSearch);
         $(SELECTORS.googleQuery).addEventListener("keydown", (e) => {
           if (e.key === "Enter") doSearch();
         });
 
-        // Modal añadir/editar juego
+        // Atajo: pulsar / enfoca el buscador si no estás escribiendo en un campo.
+        document.addEventListener("keydown", (e) => {
+          if (
+            e.key === "/" &&
+            document.activeElement.tagName !== "INPUT" &&
+            document.activeElement.tagName !== "TEXTAREA"
+          ) {
+            e.preventDefault();
+            $(SELECTORS.googleQuery).focus();
+          }
+        });
+      }
+
+      function initGameActionsUI() {
+        $(SELECTORS.gamesList).addEventListener("click", (e) => {
+          const editButton = e.target.closest(".js-edit-game");
+          if (editButton) {
+            openEdit(editButton.dataset.gameId);
+            return;
+          }
+          const deleteButton = e.target.closest(".js-delete-game");
+          if (deleteButton) {
+            deleteGame(deleteButton.dataset.gameId);
+          }
+        });
+      }
+
+      function initGameModalUI() {
         $(SELECTORS.btnAdd).addEventListener("click", () => {
           editingId = null;
           $(SELECTORS.modalTitle).textContent = "Añadir juego";
@@ -1634,17 +1707,20 @@
           $(SELECTORS.coverStatus).textContent = "sin buscar";
           $(SELECTORS.gScore).value = 0;
           $(SELECTORS.gScoreValue).textContent = 0;
+          document.getElementById("coverThumbGallery").innerHTML = "";
           updateScoreUI(0);
+          updateCoverPreview();
           $(SELECTORS.modal).classList.add("show");
           $(SELECTORS.modal).setAttribute("aria-hidden", "false");
           $(SELECTORS.gTitle).focus();
         });
+
         $(SELECTORS.btnCancel).addEventListener("click", () => {
           $(SELECTORS.modal).classList.remove("show");
           $(SELECTORS.modal).setAttribute("aria-hidden", "true");
         });
 
-        // Buscar portada ahora (muestra opciones y previsualización)
+        // Permite elegir portada entre resultados RAWG y mantener una previsualización clara.
         $(SELECTORS.btnFindCover).addEventListener("click", async () => {
           const title = $(SELECTORS.gTitle).value.trim();
           if (!title) {
@@ -1653,9 +1729,8 @@
           }
           $(SELECTORS.coverStatus).textContent = "Buscando...";
           const gallery = document.getElementById("coverThumbGallery");
-          const previewWrap = document.getElementById("coverPreviewWrap");
           gallery.innerHTML = "";
-          previewWrap.innerHTML = "";
+          document.getElementById("coverPreviewWrap").innerHTML = "";
           try {
             const imgs = await fetchCoverRAWG(title);
             if (imgs && imgs.length) {
@@ -1671,7 +1746,6 @@
                     .forEach((img) => img.classList.remove("selected"));
                   thumb.classList.add("selected");
                 });
-                // Si es la actual, resaltar
                 if (
                   $(SELECTORS.gCover).value === imgUrl ||
                   (idx === 0 && !$(SELECTORS.gCover).value)
@@ -1680,16 +1754,11 @@
                 }
                 gallery.appendChild(thumb);
               });
-              // Si no hay portada seleccionada, poner la primera
               if (!$(SELECTORS.gCover).value) {
                 $(SELECTORS.gCover).value = imgs[0];
-                updateCoverPreview();
-                gallery.querySelector("img").classList.add("selected");
-              } else {
-                updateCoverPreview();
               }
-              $(SELECTORS.coverStatus).textContent =
-                "Elige la portada correcta";
+              updateCoverPreview();
+              $(SELECTORS.coverStatus).textContent = "Elige la portada correcta";
             } else {
               $(SELECTORS.coverStatus).textContent =
                 "No encontrada (usa URL manualmente o guarda y luego edita)";
@@ -1700,50 +1769,19 @@
           }
         });
 
-        // Previsualización de portada al cambiar input manualmente
         $(SELECTORS.gCover).addEventListener("input", () => {
-          var val = $(SELECTORS.gCover).value.trim();
+          const val = $(SELECTORS.gCover).value.trim();
           document
             .getElementById("coverThumbGallery")
             .querySelectorAll("img")
             .forEach((img) => {
               img.classList.remove("selected");
-              if (img.src === val) {
-                img.classList.add("selected");
-              }
+              if (img.src === val) img.classList.add("selected");
             });
           updateCoverPreview();
         });
-        // Mostrar previsualización al abrir modal de edición/añadir
-        function updateCoverPreview() {
-          const url = $(SELECTORS.gCover).value.trim();
-          const previewWrap = document.getElementById("coverPreviewWrap");
-          previewWrap.innerHTML = "";
-          if (url) {
-            const img = document.createElement("img");
-            img.src = url;
-            img.alt = "Previsualización de portada";
-            previewWrap.appendChild(img);
-          }
-        }
-        // Llamar al abrir modal
-        const origOpenEdit = window.openEdit;
-        window.openEdit = function (id) {
-          origOpenEdit(id);
-          setTimeout(() => {
-            document.getElementById("coverThumbGallery").innerHTML = "";
-            updateCoverPreview();
-          }, 50);
-        };
-        // Al abrir modal de añadir
-        $(SELECTORS.btnAdd).addEventListener("click", () => {
-          setTimeout(() => {
-            document.getElementById("coverThumbGallery").innerHTML = "";
-            updateCoverPreview();
-          }, 50);
-        });
 
-        // Guardar juego (submit form)
+        // Guarda el juego y completa portada automática solo si falta.
         $(SELECTORS.gameForm).addEventListener("submit", async (e) => {
           e.preventDefault();
           const payload = {
@@ -1759,7 +1797,7 @@
             cover: $(SELECTORS.gCover).value.trim(),
             notes: $(SELECTORS.gNotes).value.trim(),
           };
-          // Solo buscar portada si el campo está vacío y hay título
+
           if (!payload.cover && payload.title) {
             $(SELECTORS.coverStatus).textContent = "Buscando portada...";
             try {
@@ -1777,6 +1815,7 @@
               $(SELECTORS.coverStatus).textContent = "Error buscando portada";
             }
           }
+
           if (editingId) {
             updateGame(editingId, payload);
             editingId = null;
@@ -1787,15 +1826,15 @@
           $(SELECTORS.modal).setAttribute("aria-hidden", "true");
         });
 
-        // Exportar/Importar
         $(SELECTORS.btnExport).addEventListener("click", exportJSON);
         $(SELECTORS.fileImport).addEventListener("change", (e) => {
           const f = e.target.files[0];
           if (f) importJSON(f);
           e.target.value = "";
         });
+      }
 
-        // Weather
+      function initWeatherUI() {
         $(SELECTORS.btnGeo).addEventListener("click", () => {
           if (!navigator.geolocation) {
             alert("Geolocalización no disponible en este navegador");
@@ -1814,6 +1853,7 @@
             }
           );
         });
+
         $(SELECTORS.btnFetchWeather).addEventListener("click", () => {
           const lat = parseFloat($(SELECTORS.inpLat).value);
           const lon = parseFloat($(SELECTORS.inpLon).value);
@@ -1823,64 +1863,47 @@
             alert("Introduce coordenadas válidas");
           }
         });
-        tryLoadWeatherFromStorage();
+
         showDefaultWeatherIfNeeded();
+      }
 
-        // Atajo de foco buscador
-        document.addEventListener("keydown", (e) => {
-          if (
-            e.key === "/" &&
-            document.activeElement.tagName !== "INPUT" &&
-            document.activeElement.tagName !== "TEXTAREA"
-          ) {
-            e.preventDefault();
-            $(SELECTORS.googleQuery).focus();
-          }
-        });
-
-        // Confirmación de borrado
-        $(SELECTORS.btnCancelDelete).addEventListener(
-          "click",
-          closeConfirmModal
-        );
+      function initDeleteModalsUI() {
+        $(SELECTORS.btnCancelDelete).addEventListener("click", closeConfirmModal);
         $(SELECTORS.confirmModal).addEventListener("click", (e) => {
           if (e.target === $(SELECTORS.confirmModal)) closeConfirmModal();
         });
         $(SELECTORS.btnConfirmDelete).addEventListener("click", () => {
-          if (pendingDeleteId) {
-            games = games.filter((x) => x.id !== pendingDeleteId);
-            saveGames();
-            renderGames();
-            closeConfirmModal();
-          }
+          if (!pendingDeleteId) return;
+          games = games.filter((x) => x.id !== pendingDeleteId);
+          saveGames();
+          renderGames();
+          closeConfirmModal();
         });
 
-        // Confirmación de borrado - links favoritos
-        $(SELECTORS.btnCancelFavDelete).addEventListener(
-          "click",
-          closeFavConfirm
-        );
+        $(SELECTORS.btnCancelFavDelete).addEventListener("click", closeFavConfirm);
         $(SELECTORS.favConfirmModal).addEventListener("click", (e) => {
           if (e.target === $(SELECTORS.favConfirmModal)) closeFavConfirm();
         });
         $(SELECTORS.btnConfirmFavDelete).addEventListener("click", () => {
-          if (pendingFavIndex !== null) {
-            getFavLinks((favs2) => {
-              if (pendingFavIndex >= 0 && pendingFavIndex < favs2.length) {
-                favs2.splice(pendingFavIndex, 1);
-                saveFavLinks(favs2);
-                renderFavLinks();
-              }
-              closeFavConfirm();
-            });
-          } else {
+          if (pendingFavIndex === null) {
             closeFavConfirm();
+            return;
           }
+          getFavLinks((favs2) => {
+            if (pendingFavIndex >= 0 && pendingFavIndex < favs2.length) {
+              favs2.splice(pendingFavIndex, 1);
+              saveFavLinks(favs2);
+              renderFavLinks();
+            }
+            closeFavConfirm();
+          });
         });
+      }
 
-        // Slider puntuación: sincronizar valor y burbuja
+      function initScoreSliderUI() {
         const scoreSlider = $(SELECTORS.gScore);
         const scoreWrap = scoreSlider.closest(".score-slider-wrap");
+
         scoreSlider.addEventListener("input", (e) => {
           updateScoreUI(e.target.value);
         });
@@ -1898,6 +1921,7 @@
             updateScoreUI(scoreSlider.value);
           });
         });
+
         const modal = $(SELECTORS.modal);
         const observer = new MutationObserver(() => {
           if (modal.classList.contains("show")) {
@@ -1908,22 +1932,23 @@
           attributes: true,
           attributeFilter: ["class"],
         });
-        window.addEventListener("resize", () =>
-          updateScoreUI(scoreSlider.value)
-        );
-        updateScoreUI(scoreSlider.value);
-      });
 
-      function doSearch() {
-        const q = $(SELECTORS.googleQuery).value.trim();
-        if (!q) return;
-        const url = "https://www.google.com/search?q=" + encodeURIComponent(q);
-        window.open(url, "_blank");
+        window.addEventListener("resize", () => updateScoreUI(scoreSlider.value));
+        updateScoreUI(scoreSlider.value);
       }
 
-      // Exponer funciones globales para botones inline
-      window.openEdit = openEdit;
-      window.deleteGame = deleteGame;
+      function initApp() {
+        loadGames();
+        initFavLinksUI();
+        initSearchUI();
+        initGameActionsUI();
+        initGameModalUI();
+        initWeatherUI();
+        initDeleteModalsUI();
+        initScoreSliderUI();
+      }
+
+      document.addEventListener("DOMContentLoaded", initApp);
     </script>
   </body>
 </html>
