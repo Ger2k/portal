@@ -647,26 +647,7 @@
         display: none;
       }
       .modal-card .score-bubble {
-        position: absolute;
-        top: -32px;
-        min-width: 32px;
-        padding: 2px 8px;
-        border-radius: 8px;
-        background: #222c3a;
-        color: var(--accent);
-        font-size: 15px;
-        font-weight: 600;
-        box-shadow: 0 2px 8px 0 rgba(2, 6, 23, 0.13);
-        pointer-events: none;
-        opacity: 0;
-        transform: translateX(-50%) scale(0.95);
-        transition: opacity 0.18s, transform 0.18s, left 0.12s;
-        z-index: 2;
-        left: 0;
-      }
-      .modal-card .score-slider-wrap.active .score-bubble {
-        opacity: 1;
-        transform: scale(1);
+        display: none;
       }
       .modal-card .score-slider-wrap {
         position: relative;

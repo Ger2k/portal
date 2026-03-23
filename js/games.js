@@ -283,18 +283,10 @@ function updateScoreUI(val) {
   const scoreSlider = document.getElementById("gScore");
   const scoreValue = document.getElementById("gScoreValue");
   const scoreBubble = document.getElementById("gScoreBubble");
-  const scoreWrap = scoreSlider ? scoreSlider.closest(".score-slider-wrap") : null;
-  if (!scoreSlider || !scoreValue || !scoreBubble || !scoreWrap) return;
+  if (!scoreSlider || !scoreValue) return;
 
   scoreValue.textContent = val;
-  scoreBubble.textContent = val;
-  const min = Number(scoreSlider.min);
-  const max = Number(scoreSlider.max);
-  const percent = (val - min) / (max - min);
-  const sliderRect = scoreSlider.getBoundingClientRect();
-  const thumbWidth = 16;
-  const usableWidth = sliderRect.width - thumbWidth;
-  let px = percent * usableWidth + thumbWidth / 2;
-  px = Math.max(thumbWidth / 2, Math.min(sliderRect.width - thumbWidth / 2, px));
-  scoreBubble.style.left = px + "px";
+  if (scoreBubble) {
+    scoreBubble.textContent = val;
+  }
 }

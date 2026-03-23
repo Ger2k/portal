@@ -250,24 +250,10 @@ function initDeleteModalsUI() {
 
 function initScoreSliderUI() {
   const scoreSlider = $(SELECTORS.gScore);
-  const scoreWrap = scoreSlider.closest(".score-slider-wrap");
+  if (!scoreSlider) return;
 
   scoreSlider.addEventListener("input", (e) => {
     updateScoreUI(e.target.value);
-  });
-  scoreSlider.addEventListener("mousedown", () => {
-    scoreWrap.classList.add("active");
-    updateScoreUI(scoreSlider.value);
-  });
-  scoreSlider.addEventListener("touchstart", () => {
-    scoreWrap.classList.add("active");
-    updateScoreUI(scoreSlider.value);
-  });
-  ["mouseup", "mouseleave", "touchend", "blur"].forEach((ev) => {
-    scoreSlider.addEventListener(ev, () => {
-      scoreWrap.classList.remove("active");
-      updateScoreUI(scoreSlider.value);
-    });
   });
 
   const modal = $(SELECTORS.modal);
