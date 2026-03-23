@@ -137,6 +137,7 @@
         display: flex;
         align-items: center;
         gap: 16px;
+        flex-wrap: wrap;
       }
       h1 {
         font-size: 20px;
@@ -237,6 +238,23 @@
         display: flex;
         justify-content: space-between;
         align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .games-title {
+        color: #fff;
+        margin: 0;
+      }
+      .games-controls {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+      }
+      #gamesSort {
+        min-width: 210px;
+        max-width: 100%;
       }
       .games-list {
         display: flex;
@@ -443,6 +461,7 @@
         display: none;
         align-items: center;
         justify-content: center;
+        padding: 14px;
         background: rgba(2, 6, 23, 0.6);
         z-index: 1000;
       }
@@ -455,6 +474,8 @@
         border-radius: 12px;
         width: 520px;
         max-width: calc(100% - 40px);
+        max-height: calc(100vh - 28px);
+        overflow: auto;
         box-shadow: 0 8px 32px 0 rgba(2, 6, 23, 0.18);
         position: relative;
       }
@@ -745,6 +766,128 @@
       .auth-modal {
         z-index: 2200;
       }
+
+      @media (max-width: 1024px) {
+        .wrap {
+          margin: 20px auto;
+          padding: 14px;
+        }
+        .top {
+          grid-template-columns: 1fr 300px;
+          gap: 14px;
+        }
+        .game {
+          padding: 18px;
+          gap: 18px;
+        }
+      }
+
+      @media (max-width: 760px) {
+        .wrap {
+          padding: 12px;
+          margin: 14px auto;
+        }
+        h1 {
+          font-size: 18px;
+        }
+        .user-chip {
+          width: 100%;
+          justify-content: flex-start;
+          margin-left: 0;
+        }
+        .games-controls {
+          width: 100%;
+          justify-content: stretch;
+        }
+        #gamesSort {
+          flex: 1 1 100%;
+          width: 100%;
+          min-width: 0;
+        }
+        .games-controls .small {
+          flex: 1 1 calc(50% - 8px);
+          text-align: center;
+        }
+      }
+
+      @media (max-width: 700px) {
+        .sidebar-links {
+          top: auto;
+          bottom: 10px;
+          left: 50%;
+          transform: translateX(-50%);
+          flex-direction: row;
+          gap: 10px;
+          padding: 8px 10px;
+          border-radius: 999px;
+          background: rgba(28, 36, 53, 0.92);
+          backdrop-filter: blur(6px);
+          max-width: calc(100vw - 16px);
+          overflow-x: auto;
+        }
+        .sidebar-link-btn {
+          left: 0;
+          margin-left: 0;
+          width: 40px;
+          height: 40px;
+          font-size: 18px;
+          flex: 0 0 auto;
+        }
+        .sidebar-link-btn img {
+          width: 22px;
+          height: 22px;
+        }
+        .sidebar-link-btn .fav-remove {
+          width: 16px;
+          height: 16px;
+          font-size: 11px;
+          top: -6px;
+          right: -6px;
+        }
+        footer {
+          padding-bottom: 70px;
+        }
+      }
+
+      @media (max-width: 600px) {
+        .search {
+          flex-direction: column;
+        }
+        .search button {
+          width: 100%;
+          padding: 11px 12px;
+        }
+        .weather-top {
+          flex-direction: column;
+          align-items: flex-start;
+          gap: 8px;
+        }
+        .games-controls .small {
+          flex: 1 1 100%;
+        }
+      }
+
+      @media (max-width: 420px) {
+        .game {
+          padding: 14px 10px;
+        }
+        .game .actions {
+          flex-direction: column;
+        }
+        .game .actions button,
+        .actions button.small {
+          flex: 1 1 100%;
+        }
+        .modal {
+          padding: 10px;
+        }
+        .modal-card {
+          max-width: calc(100% - 20px);
+          padding: 14px;
+          border-radius: 10px;
+        }
+      }
+
       body.auth-required .wrap,
       body.auth-required .sidebar-links {
         visibility: hidden;
