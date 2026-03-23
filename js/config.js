@@ -15,7 +15,6 @@ const FIREBASE_CONFIG = {
   appId: "1:1066323213139:web:cb0aaf585a08e692f4ffa6",
 };
 
-const RAWG_API_KEY = "f9f8f4e16c9740248b1c67e71720e801";
 const WEATHER_KEY = "homepage_weather_loc";
 
 const SELECTORS = {

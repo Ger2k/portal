@@ -217,27 +217,15 @@ async function fetchCoverRAWG(title) {
   const q = title && title.trim();
   if (!q) return [];
   if (coverCache[q]) return coverCache[q];
-  const base = "https://api.rawg.io/api/games";
-  const params = new URLSearchParams({ search: q, page_size: "3" });
-  if (RAWG_API_KEY) params.set("key", RAWG_API_KEY);
-  const url = `${base}?${params.toString()}`;
+  const url = `/.netlify/functions/rawg-cover?title=${encodeURIComponent(q)}`;
 
   try {
     const res = await fetch(url);
-    if (!res.ok) throw new Error("RAWG no responde: " + res.status);
+    if (!res.ok) throw new Error("Proxy RAWG no responde: " + res.status);
     const data = await res.json();
-    let imgs = [];
-    if (data && data.results && data.results.length) {
-      for (const r of data.results) {
-        if (r.background_image) imgs.push(r.background_image);
-        if (r.short_screenshots && Array.isArray(r.short_screenshots)) {
-          for (const s of r.short_screenshots) {
-            if (s.image && !imgs.includes(s.image)) imgs.push(s.image);
-          }
-        }
-      }
-    }
-    imgs = imgs.filter(Boolean).slice(0, 4);
+    const imgs = Array.isArray(data && data.images)
+      ? data.images.filter(Boolean).slice(0, 4)
+      : [];
     coverCache[q] = imgs;
     return imgs;
   } catch (err) {
