@@ -36,6 +36,53 @@ function saveGames() {
   gamesRef.set(games);
 }
 
+function getGameSortDateValue(game) {
+  if (game && typeof game.date === "string" && game.date.trim()) {
+    const parsed = Date.parse(game.date);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  const idNum = Number(game && game.id);
+  return Number.isFinite(idNum) ? idNum : null;
+}
+
+function getSortedGames(list, sortOrder) {
+  const arr = Array.isArray(list) ? list : [];
+
+  return arr
+    .map((item, idx) => ({ item, idx }))
+    .sort((a, b) => {
+      const ga = a.item || {};
+      const gb = b.item || {};
+
+      if (sortOrder === "title-asc") {
+        const ta = String(ga.title || "").trim();
+        const tb = String(gb.title || "").trim();
+        const cmp = ta.localeCompare(tb, "es", { sensitivity: "base" });
+        return cmp || a.idx - b.idx;
+      }
+
+      if (sortOrder === "score-desc" || sortOrder === "score-asc") {
+        const sa = typeof ga.score === "number" ? ga.score : null;
+        const sb = typeof gb.score === "number" ? gb.score : null;
+        if (sa === null && sb === null) return a.idx - b.idx;
+        if (sa === null) return 1;
+        if (sb === null) return -1;
+        const cmp = sortOrder === "score-asc" ? sa - sb : sb - sa;
+        return cmp || a.idx - b.idx;
+      }
+
+      const da = getGameSortDateValue(ga);
+      const db = getGameSortDateValue(gb);
+      if (da === null && db === null) return a.idx - b.idx;
+      if (da === null) return 1;
+      if (db === null) return -1;
+
+      const cmp = sortOrder === "date-asc" ? da - db : db - da;
+      return cmp || a.idx - b.idx;
+    })
+    .map((x) => x.item);
+}
+
 function renderGames(newGameId = null) {
   const container = $(SELECTORS.gamesList);
   container.innerHTML = "";
@@ -46,11 +93,7 @@ function renderGames(newGameId = null) {
     return;
   }
 
-  const sorted = [...games].sort((a, b) => {
-    const da = a.date || a.id;
-    const db = b.date || b.id;
-    return (db || "").localeCompare(da || "");
-  });
+  const sorted = getSortedGames(games, gamesSortOrder);
 
   for (const g of sorted) {
     const div = document.createElement("div");

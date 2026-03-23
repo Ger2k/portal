@@ -26,6 +26,17 @@ function initSearchUI() {
   });
 }
 
+function initSortUI() {
+  const sortSelect = $(SELECTORS.gamesSort);
+  if (!sortSelect) return;
+
+  sortSelect.value = gamesSortOrder;
+  sortSelect.addEventListener("change", (e) => {
+    gamesSortOrder = e.target.value || "date-desc";
+    renderGames();
+  });
+}
+
 function initGameActionsUI() {
   $(SELECTORS.gamesList).addEventListener("click", (e) => {
     const editButton = e.target.closest(".js-edit-game");
@@ -275,6 +286,7 @@ function initScoreSliderUI() {
 }
 
 function initApp() {
+  initSortUI();
   loadGames();
   initFavLinksUI();
   initSearchUI();

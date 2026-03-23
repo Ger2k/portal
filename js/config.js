@@ -36,6 +36,7 @@ const SELECTORS = {
   gHours: "#gHours",
   gCover: "#gCover",
   gNotes: "#gNotes",
+  gamesSort: "#gamesSort",
   coverStatus: "#coverStatus",
   btnAdd: "#btnAdd",
   btnCancel: "#btnCancel",
@@ -79,6 +80,7 @@ let pendingFavIndex = null;
 let currentUser = null;
 let currentUid = null;
 let appInitialized = false;
+let gamesSortOrder = "date-desc";
 const coverCache = {};
 
 // =====================

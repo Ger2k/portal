@@ -67,6 +67,13 @@
         <div class="games-header">
           <h2 style="color: #fff; margin: 0">Juegos finalizados</h2>
           <div style="display: flex; gap: 8px; align-items: center">
+            <select id="gamesSort" class="small" aria-label="Ordenar juegos">
+              <option value="date-desc">Completados más recientes</option>
+              <option value="date-asc">Completados más antiguos</option>
+              <option value="score-desc">Puntuación más alta</option>
+              <option value="score-asc">Puntuación más baja</option>
+              <option value="title-asc">Título A-Z</option>
+            </select>
             <button id="btnAdd" class="small">Añadir juego</button>
             <button id="btnExport" class="small">Exportar JSON</button>
             <label
