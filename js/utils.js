@@ -45,8 +45,24 @@ function normalizeGamesData(raw) {
 
 function sanitizeImageUrl(url) {
   if (!url) return "";
+
+  let candidate = String(url).trim();
+
+  // Soporta pegado de enlaces envueltos entre comillas o parentesis.
+  if (
+    (candidate.startsWith("\"") && candidate.endsWith("\"")) ||
+    (candidate.startsWith("'") && candidate.endsWith("'")) ||
+    (candidate.startsWith("(") && candidate.endsWith(")"))
+  ) {
+    candidate = candidate.slice(1, -1).trim();
+  }
+
+  if (candidate.startsWith("http://images.igdb.com/")) {
+    candidate = candidate.replace("http://", "https://");
+  }
+
   try {
-    const parsed = new URL(url, window.location.href);
+    const parsed = new URL(candidate, window.location.href);
     return /^https?:$/.test(parsed.protocol) ? parsed.href : "";
   } catch {
     return "";

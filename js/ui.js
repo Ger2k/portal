@@ -118,7 +118,8 @@ function initGameModalUI() {
           "No encontrada (usa URL manualmente o guarda y luego edita)";
       }
     } catch (e) {
-      $(SELECTORS.coverStatus).textContent = "Error al buscar";
+      $(SELECTORS.coverStatus).textContent =
+        "Error al buscar: " + (e && e.message ? e.message : "desconocido");
       console.error(e);
     }
   });
@@ -143,7 +144,7 @@ function initGameModalUI() {
       date: $(SELECTORS.gDate).value || "",
       score: $(SELECTORS.gScore).value ? Number($(SELECTORS.gScore).value) : null,
       hours: $(SELECTORS.gHours).value ? Number($(SELECTORS.gHours).value) : null,
-      cover: $(SELECTORS.gCover).value.trim(),
+      cover: sanitizeImageUrl($(SELECTORS.gCover).value),
       notes: $(SELECTORS.gNotes).value.trim(),
     };
 
@@ -159,7 +160,9 @@ function initGameModalUI() {
         }
       } catch (err) {
         console.warn(err);
-        $(SELECTORS.coverStatus).textContent = "Error buscando portada";
+        $(SELECTORS.coverStatus).textContent =
+          "Error buscando portada: " +
+          (err && err.message ? err.message : "desconocido");
       }
     }
 

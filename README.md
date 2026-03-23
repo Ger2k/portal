@@ -107,7 +107,7 @@ Esto levanta la web y expone `/.netlify/functions/*` localmente.
 
 ## Variables de entorno (Netlify)
 
-Para ocultar secretos, la key de RAWG ya no vive en frontend. Ahora se lee desde la funcion serverless.
+Para ocultar secretos, la key de RAWG no vive en frontend. Ahora se lee desde la funcion serverless.
 
 Configura en Netlify:
 
@@ -151,4 +151,5 @@ Checklist de despliegue:
 ## Notas
 
 - La busqueda de portadas usa un proxy serverless (`/.netlify/functions/rawg-cover`) para no exponer la key RAWG en cliente.
+- El proxy prioriza caratulas (`background_image`) por coincidencia de titulo y usa capturas (`short_screenshots`) solo como fallback.
 - El fallback de login intenta popup y, si falla por entorno, usa redirect.

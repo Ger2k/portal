@@ -255,7 +255,7 @@ function importJSON(file) {
   r.readAsText(file);
 }
 
-// RAWG cover search: devuelve array de imagenes (max 4)
+// RAWG cover search (via Netlify Function): devuelve array de imagenes (max 4)
 async function fetchCoverRAWG(title) {
   const q = title && title.trim();
   if (!q) return [];
@@ -264,19 +264,33 @@ async function fetchCoverRAWG(title) {
 
   try {
     const res = await fetch(url);
-    if (!res.ok) throw new Error("Proxy RAWG no responde: " + res.status);
+    if (!res.ok) {
+      let message = "Proxy RAWG no responde: " + res.status;
+      try {
+        const errPayload = await res.json();
+        if (errPayload && errPayload.error) {
+          message = String(errPayload.error);
+        }
+      } catch {
+        // Si no viene JSON, mantenemos el mensaje por status.
+      }
+      throw new Error(message);
+    }
+
     const data = await res.json();
     const imgs = Array.isArray(data && data.images)
       ? data.images.filter(Boolean).slice(0, 4)
       : [];
-    coverCache[q] = imgs;
+
+    if (imgs.length) {
+      coverCache[q] = imgs;
+    }
+
     return imgs;
   } catch (err) {
     console.warn("Error buscando portada RAWG:", err);
+    throw err;
   }
-
-  coverCache[q] = [];
-  return [];
 }
 
 function updateScoreUI(val) {
