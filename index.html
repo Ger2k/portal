@@ -728,6 +728,38 @@
         border: 2px solid #222c3a;
         box-shadow: 0 2px 8px 0 rgba(2, 6, 23, 0.13);
       }
+      .user-chip {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .user-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #22c55e;
+        box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.15);
+      }
+      .user-email {
+        color: var(--muted);
+        font-size: 13px;
+        max-width: 260px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .auth-modal {
+        z-index: 2200;
+      }
+      body.auth-required .wrap,
+      body.auth-required .sidebar-links {
+        visibility: hidden;
+        pointer-events: none;
+      }
+      body.auth-required {
+        overflow: hidden;
+      }
     </style>
   </head>
   <body>
@@ -737,6 +769,11 @@
     <div class="wrap">
       <header>
         <h1>Inicio personal</h1>
+        <div class="user-chip">
+          <span class="user-dot" aria-hidden="true"></span>
+          <span id="userEmail" class="user-email">Sin sesión</span>
+          <button id="btnLogout" class="small" type="button">Salir</button>
+        </div>
       </header>
 
       <div class="top">
@@ -811,6 +848,19 @@
       </section>
 
       <footer>Hecho para uso personal — versión prototipo.</footer>
+    </div>
+
+    <div id="authModal" class="modal auth-modal" role="dialog" aria-hidden="true">
+      <div class="modal-card" style="max-width: 420px">
+        <h3 style="margin-top: 0">Iniciar sesión</h3>
+        <p style="color: var(--muted); margin-top: 0; font-size: 14px">
+          Accede con tu cuenta de Google para cargar tu lista personal de juegos y links favoritos.
+        </p>
+        <button id="btnGoogleLogin" class="btn" type="button" style="width: 100%; margin-top: 6px">
+          Continuar con Google
+        </button>
+        <div id="authError" style="margin-top: 10px; color: #fca5a5; font-size: 13px"></div>
+      </div>
     </div>
 
     <!-- modal form -->
@@ -1042,6 +1092,8 @@
 
     <!-- Firebase App (core) -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+    <!-- Firebase Authentication -->
+    <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
     <!-- Firebase Realtime Database -->
     <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
     <script>
@@ -1053,27 +1105,34 @@
 
       // Links favoritos sincronizados con Firebase
       function getFavLinks(cb) {
-        db.ref("favlinks")
+        const favRef = getUserFavLinksRef();
+        if (!favRef) {
+          cb([]);
+          return;
+        }
+        favRef
           .once("value")
           .then((snapshot) => {
             const arr = snapshot.val() || [];
-            localStorage.setItem(FAV_KEY, JSON.stringify(arr));
+            localStorage.setItem(getUserStorageKey(FAV_KEY), JSON.stringify(arr));
             cb(arr);
             console.log("Links favoritos cargados desde Firebase:");
           })
-          .catch(() => {
+          .catch((err) => {
             // Si falla, usar local
             try {
-              console.log("Error al cargar links favoritos de Firebase, usando localStorage");
-              cb(JSON.parse(localStorage.getItem(FAV_KEY)) || []);
+              console.log("Error al cargar links favoritos de Firebase, usando localStorage", err);
+              cb(JSON.parse(localStorage.getItem(getUserStorageKey(FAV_KEY))) || []);
             } catch {
               cb([]);
             }
           });
       }
       function saveFavLinks(arr) {
-        localStorage.setItem(FAV_KEY, JSON.stringify(arr));
-        db.ref("favlinks").set(arr);
+        const favRef = getUserFavLinksRef();
+        if (!favRef) return;
+        localStorage.setItem(getUserStorageKey(FAV_KEY), JSON.stringify(arr));
+        favRef.set(arr);
       }
       function renderFavLinks() {
         getFavLinks((favs) => {
@@ -1158,14 +1217,14 @@
       // Configuración y Constantes
       // =====================
       const FIREBASE_CONFIG = {
-        apiKey: "TU_API_KEY",
+        apiKey: "AIzaSyAvRfkQz-L2qqOfKfYV3-r0eVIgv9T9WfI",
         authDomain: "juegos-completados-a3005.firebaseapp.com",
         databaseURL:
           "https://juegos-completados-a3005-default-rtdb.europe-west1.firebasedatabase.app",
         projectId: "juegos-completados-a3005",
-        storageBucket: "juegos-completados-a3005.appspot.com",
-        messagingSenderId: "TU_MESSAGING_SENDER_ID",
-        appId: "TU_APP_ID",
+        storageBucket: "juegos-completados-a3005.firebasestorage.app",
+        messagingSenderId: "1066323213139",
+        appId: "1:1066323213139:web:cb0aaf585a08e692f4ffa6",
       };
       const RAWG_API_KEY = "f9f8f4e16c9740248b1c67e71720e801";
       const WEATHER_KEY = "homepage_weather_loc";
@@ -1173,6 +1232,11 @@
         gamesList: "#gamesList",
         modal: "#modal",
         modalTitle: "#modalTitle",
+        authModal: "#authModal",
+        btnGoogleLogin: "#btnGoogleLogin",
+        authError: "#authError",
+        btnLogout: "#btnLogout",
+        userEmail: "#userEmail",
         gameForm: "#gameForm",
         gTitle: "#gTitle",
         gPlatform: "#gPlatform",
@@ -1214,6 +1278,7 @@
       // =====================
       firebase.initializeApp(FIREBASE_CONFIG);
       const db = firebase.database();
+      const auth = firebase.auth();
 
       // =====================
       // Helpers
@@ -1265,6 +1330,34 @@
           return "";
         }
       }
+      function setAppLocked(locked) {
+        document.body.classList.toggle("auth-required", locked);
+        $(SELECTORS.authModal).classList.toggle("show", locked);
+        $(SELECTORS.authModal).setAttribute("aria-hidden", locked ? "false" : "true");
+      }
+      function getUserStorageKey(baseKey) {
+        return currentUid ? `${baseKey}_${currentUid}` : baseKey;
+      }
+      function getUserGamesRef() {
+        return currentUid ? db.ref(`users/${currentUid}/games`) : null;
+      }
+      function getUserFavLinksRef() {
+        return currentUid ? db.ref(`users/${currentUid}/favlinks`) : null;
+      }
+      function clearUserScopedState() {
+        games = [];
+        pendingDeleteId = null;
+        pendingFavIndex = null;
+        editingId = null;
+        renderGames();
+        document.getElementById("sidebarLinks").innerHTML = "";
+      }
+      function updateSessionBadge() {
+        $(SELECTORS.userEmail).textContent = currentUser
+          ? currentUser.email || "Sesión iniciada"
+          : "Sin sesión";
+        $(SELECTORS.btnLogout).style.display = currentUser ? "inline-flex" : "none";
+      }
 
       // =====================
       // Estado global
@@ -1273,6 +1366,9 @@
       let editingId = null;
       let pendingDeleteId = null;
       let pendingFavIndex = null;
+      let currentUser = null;
+      let currentUid = null;
+      let appInitialized = false;
       const coverCache = {};
 
       // =====================
@@ -1306,17 +1402,25 @@
       // CRUD y almacenamiento
       // =====================
       function loadGames() {
-        db.ref("games")
+        const gamesRef = getUserGamesRef();
+        if (!gamesRef) {
+          games = [];
+          renderGames();
+          return;
+        }
+        gamesRef
           .once("value")
           .then((snapshot) => {
             games = normalizeGamesData(snapshot.val());
-            localStorage.setItem(GAMES_KEY, JSON.stringify(games));
+            localStorage.setItem(getUserStorageKey(GAMES_KEY), JSON.stringify(games));
             renderGames();
           })
           .catch((err) => {
             console.error("No se pudo cargar juegos de Firebase", err);
             try {
-              games = normalizeGamesData(JSON.parse(localStorage.getItem(GAMES_KEY)));
+              games = normalizeGamesData(
+                JSON.parse(localStorage.getItem(getUserStorageKey(GAMES_KEY)))
+              );
             } catch {
               games = [];
             }
@@ -1324,8 +1428,10 @@
           });
       }
       function saveGames() {
-        localStorage.setItem(GAMES_KEY, JSON.stringify(games));
-        db.ref("games").set(games);
+        const gamesRef = getUserGamesRef();
+        if (!gamesRef) return;
+        localStorage.setItem(getUserStorageKey(GAMES_KEY), JSON.stringify(games));
+        gamesRef.set(games);
       }
 
       // =====================
@@ -1683,6 +1789,87 @@
         });
       }
 
+      function getAuthErrorMessage(err) {
+        const code = err && err.code ? err.code : "auth/unknown";
+        const base = `Error de acceso (${code}).`;
+        if (code === "auth/popup-blocked") {
+          return `${base} El navegador bloqueo la ventana emergente. Se intentara el acceso por redireccion.`;
+        }
+        if (code === "auth/operation-not-supported-in-this-environment") {
+          return `${base} Este entorno no permite popup. Se intentara acceso por redireccion.`;
+        }
+        if (code === "auth/unauthorized-domain") {
+          return `${base} Tu dominio no esta autorizado en Firebase Authentication.`;
+        }
+        if (code === "auth/network-request-failed") {
+          return `${base} No hay conexion o la red esta bloqueando Firebase.`;
+        }
+        return `${base} Revisa consola para el detalle tecnico.`;
+      }
+
+      async function signInWithGoogle() {
+        const provider = new firebase.auth.GoogleAuthProvider();
+        provider.setCustomParameters({ prompt: "select_account" });
+        $(SELECTORS.authError).textContent = "";
+        try {
+          await auth.signInWithPopup(provider);
+        } catch (err) {
+          console.error("Error en login con Google (popup)", err);
+          const code = err && err.code ? err.code : "";
+          if (
+            code === "auth/popup-blocked" ||
+            code === "auth/operation-not-supported-in-this-environment"
+          ) {
+            $(SELECTORS.authError).textContent = getAuthErrorMessage(err);
+            await auth.signInWithRedirect(provider);
+            return;
+          }
+          $(SELECTORS.authError).textContent = getAuthErrorMessage(err);
+        }
+      }
+
+      function initAuthUI() {
+        auth
+          .getRedirectResult()
+          .catch((err) => {
+            console.error("Error en login con Google (redirect)", err);
+            $(SELECTORS.authError).textContent = getAuthErrorMessage(err);
+          });
+
+        $(SELECTORS.btnGoogleLogin).addEventListener("click", signInWithGoogle);
+
+        $(SELECTORS.btnLogout).addEventListener("click", async () => {
+          try {
+            await auth.signOut();
+          } catch (err) {
+            console.error("Error cerrando sesión", err);
+            alert("No se pudo cerrar sesión ahora mismo.");
+          }
+        });
+
+        auth.onAuthStateChanged((user) => {
+          currentUser = user || null;
+          currentUid = user ? user.uid : null;
+          updateSessionBadge();
+
+          if (!user) {
+            setAppLocked(true);
+            clearUserScopedState();
+            return;
+          }
+
+          setAppLocked(false);
+
+          if (!appInitialized) {
+            initApp();
+            appInitialized = true;
+          } else {
+            loadGames();
+            renderFavLinks();
+          }
+        });
+      }
+
       function initGameActionsUI() {
         $(SELECTORS.gamesList).addEventListener("click", (e) => {
           const editButton = e.target.closest(".js-edit-game");
@@ -1948,7 +2135,11 @@
         initScoreSliderUI();
       }
 
-      document.addEventListener("DOMContentLoaded", initApp);
+      document.addEventListener("DOMContentLoaded", () => {
+        setAppLocked(true);
+        updateSessionBadge();
+        initAuthUI();
+      });
     </script>
   </body>
 </html>
