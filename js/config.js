@@ -19,6 +19,10 @@ const WEATHER_KEY = "homepage_weather_loc";
 
 const SELECTORS = {
   gamesList: "#gamesList",
+  paginationControls: "#paginationControls",
+  paginationPrev: "#paginationPrev",
+  paginationNext: "#paginationNext",
+  paginationInfo: "#paginationInfo",
   modal: "#modal",
   modalTitle: "#modalTitle",
   authModal: "#authModal",
@@ -81,6 +85,8 @@ let currentUser = null;
 let currentUid = null;
 let appInitialized = false;
 let gamesSortOrder = "date-desc";
+let currentPageNum = 1;
+const ITEMS_PER_PAGE = 10;
 const coverCache = {};
 
 // =====================

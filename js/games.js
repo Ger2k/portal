@@ -83,6 +83,38 @@ function getSortedGames(list, sortOrder) {
     .map((x) => x.item);
 }
 
+function getPagedGames(list, sortOrder, pageNum, pageSize = ITEMS_PER_PAGE) {
+  const sorted = getSortedGames(list, sortOrder);
+  const totalItems = sorted.length;
+  const totalPages = Math.max(1, Math.ceil(totalItems / pageSize));
+  const currentPage = Math.max(1, Math.min(Number(pageNum) || 1, totalPages));
+  const start = (currentPage - 1) * pageSize;
+  const pageItems = sorted.slice(start, start + pageSize);
+
+  return { pageItems, currentPage, totalPages, totalItems };
+}
+
+function updatePaginationUI(meta) {
+  const controls = $(SELECTORS.paginationControls);
+  const prevBtn = $(SELECTORS.paginationPrev);
+  const nextBtn = $(SELECTORS.paginationNext);
+  const info = $(SELECTORS.paginationInfo);
+  if (!controls || !prevBtn || !nextBtn || !info) return;
+
+  if (!meta || meta.totalItems === 0) {
+    controls.hidden = true;
+    prevBtn.disabled = true;
+    nextBtn.disabled = true;
+    info.textContent = "Página 1 de 1";
+    return;
+  }
+
+  controls.hidden = false;
+  prevBtn.disabled = meta.currentPage <= 1;
+  nextBtn.disabled = meta.currentPage >= meta.totalPages;
+  info.textContent = `Página ${meta.currentPage} de ${meta.totalPages}`;
+}
+
 function renderGames(newGameId = null) {
   const container = $(SELECTORS.gamesList);
   container.innerHTML = "";
@@ -90,12 +122,14 @@ function renderGames(newGameId = null) {
   if (!games.length) {
     container.innerHTML =
       '<div style="color:var(--muted)">No hay juegos todavía. Añade el primero.</div>';
+    updatePaginationUI({ totalItems: 0, currentPage: 1, totalPages: 1 });
     return;
   }
 
-  const sorted = getSortedGames(games, gamesSortOrder);
+  const pageData = getPagedGames(games, gamesSortOrder, currentPageNum);
+  currentPageNum = pageData.currentPage;
 
-  for (const g of sorted) {
+  for (const g of pageData.pageItems) {
     const div = document.createElement("div");
     div.className = "game";
     const safeCover = sanitizeImageUrl(g.cover);
@@ -147,6 +181,8 @@ function renderGames(newGameId = null) {
 
     container.appendChild(div);
   }
+
+  updatePaginationUI(pageData);
 }
 
 function addGame(payload) {
@@ -162,6 +198,7 @@ function addGame(payload) {
   });
   games.push(entry);
   saveGames();
+  currentPageNum = 1;
   renderGames(entry.id);
 }
 
@@ -246,6 +283,7 @@ function importJSON(file) {
       }
       games = parsed;
       saveGames();
+      currentPageNum = 1;
       renderGames();
       alert("Importado correctamente");
     } catch (err) {

@@ -33,6 +33,26 @@ function initSortUI() {
   sortSelect.value = gamesSortOrder;
   sortSelect.addEventListener("change", (e) => {
     gamesSortOrder = e.target.value || "date-desc";
+    currentPageNum = 1;
+    renderGames();
+  });
+}
+
+function initPaginationUI() {
+  const prevBtn = $(SELECTORS.paginationPrev);
+  const nextBtn = $(SELECTORS.paginationNext);
+  if (!prevBtn || !nextBtn) return;
+
+  prevBtn.addEventListener("click", () => {
+    if (currentPageNum <= 1) return;
+    currentPageNum -= 1;
+    renderGames();
+  });
+
+  nextBtn.addEventListener("click", () => {
+    const pageData = getPagedGames(games, gamesSortOrder, currentPageNum);
+    if (currentPageNum >= pageData.totalPages) return;
+    currentPageNum += 1;
     renderGames();
   });
 }
@@ -276,6 +296,7 @@ function initScoreSliderUI() {
 
 function initApp() {
   initSortUI();
+  initPaginationUI();
   loadGames();
   initFavLinksUI();
   initSearchUI();

@@ -270,6 +270,23 @@
         gap: 22px;
         margin-top: 18px;
       }
+      .pagination {
+        margin-top: 18px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+      .pagination[hidden] {
+        display: none;
+      }
+      .pagination-info {
+        min-width: 140px;
+        text-align: center;
+        color: var(--muted);
+        font-size: 14px;
+      }
       /* Animación de aparición para juegos nuevos */
       .game-appear {
         animation: gameFadeIn 0.55s cubic-bezier(0.33, 1.02, 0.47, 0.98);
@@ -398,6 +415,12 @@
         transition: transform 0.18s ease, box-shadow 0.2s ease,
           background-color 0.2s ease;
       }
+      .small:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+      }
       .btn:focus-visible,
       .small:focus-visible,
       .search button:focus-visible {
@@ -490,6 +513,17 @@
           min-width: 0;
           font-size: 15px;
           padding: 10px 0;
+        }
+        .pagination {
+          gap: 8px;
+        }
+        .pagination .small {
+          flex: 1 1 42%;
+          min-width: 120px;
+        }
+        .pagination-info {
+          width: 100%;
+          order: -1;
         }
       }
 
